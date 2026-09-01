@@ -392,7 +392,7 @@ function rebuildTextByLayout(words) {
       currentLine.push(word);
       currentY = currentY === null ? word.bbox.y0 : (currentY + word.bbox.y0) / 2;
     } else {
-      currentLine.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+      currentLine.sort((a, b) => a.x0 - b.x0);
       lines.push(currentLine.map(w => w.text).join(' '));
       currentLine = [word];
       currentY = word.bbox.y0;
@@ -400,7 +400,7 @@ function rebuildTextByLayout(words) {
   }
 
   if (currentLine.length > 0) {
-    currentLine.sort((a, b) => a.bbox.x0 - b.bbox.x0);
+    currentLine.sort((a, b) => a.x0 - b.x0);
     lines.push(currentLine.map(w => w.text).join(' '));
   }
 
@@ -489,7 +489,46 @@ async function processDocument(file) {
       const worksheet = workbook.Sheets[firstSheetName];
       
       const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-      extractedText = rows.map(r => r.filter(c => c !== null && c !== undefined && String(c).trim() !== '').join(' ')).join('\n');
+      let excelLines = [];
+
+      for (let r of rows) {
+        if (!r || r.length === 0) continue;
+        
+        // Buscar NIE (7 u 8 dígitos) o Correo en la fila de Excel
+        let rowStr = r.join(' ');
+        let nie = '';
+        let emailMatch = rowStr.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+        if (emailMatch) {
+          nie = emailMatch[0].split('@')[0];
+        } else {
+          let nieMatch = rowStr.match(/\b\d{7,8}\b/);
+          if (nieMatch) nie = nieMatch[0];
+        }
+
+        // Extraer texto que parezca un nombre (sin números ni asistencia)
+        let nameParts = [];
+        for (let cell of r) {
+          let cellStr = String(cell).trim();
+          if (!cellStr) continue;
+          
+          // Ignorar secuencias largas de unos y ceros, números de NIE, y diagnósticos
+          if (/^\d+$/.test(cellStr)) continue;
+          if (/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi.test(cellStr)) continue;
+          if (/^[01]{3,}$/.test(cellStr)) continue;
+          if (/^(SÍ|SI|NO|VALIDADA|ESTADO|IC|1C|CI|C1)$/i.test(cellStr)) continue;
+
+          nameParts.push(cellStr);
+        }
+
+        let fullName = nameParts.join(' ').trim();
+        if (nie && fullName) {
+          excelLines.push(`${nie} ${fullName}`);
+        } else if (fullName.length > 5 && /[a-zA-Z]/.test(fullName)) {
+          excelLines.push(rowStr);
+        }
+      }
+
+      extractedText = excelLines.join('\n');
 
     } else if (file.type === 'application/pdf' || fileExt === 'pdf') {
       const fileArrayBuffer = await file.arrayBuffer();
@@ -553,11 +592,9 @@ function cleanOCRNoise(str) {
             .map(line => {
               let cleaned = line.replace(/[\[\]{}|\\=_+~*!#$%^&`<>]/g, ' ')
                          .replace(/\b(si|sí|no|estado|validada|observaci[oó]n|matriculado|no\.|nie|nombre del estudiante)\b/gi, ' ')
-                         // Remueve observaciones médicas y diagnósticos recurrentes de las planillas
                          .replace(/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi, ' ')
                          .replace(/^\s*\d{1,3}\s+(?=\d{7,8}\b)/i, '')
                          .replace(/\b(IC|1C|CI|C1)\b/gi, ' ')
-                         // Remueve secuencias largas de unos y ceros (asistencia o respuestas binarias)
                          .replace(/\b[01]{3,}\b/g, ' ')
                          .replace(/(\s+\d+)+$/g, '') 
                          .replace(/\s+/g, ' ')
@@ -591,7 +628,6 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
 });
 
 function splitName(fullName) {
-  // Limpieza estricta de cualquier residuo antes de procesar apellidos y nombres
   let cleanStr = fullName.replace(/\b\d+\b/g, '')
                          .replace(/\b(SÍ|SI|NO|IC|1C|CI|C1)\b/gi, '')
                          .replace(/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi, '')
@@ -615,9 +651,7 @@ function splitName(fullName) {
     return { nombre: tokens.slice(0, 1).join(' '), apellido: tokens.slice(1).join(' '), review: tokens.length < 2 };
   }
 
-  // Estructura detectada: NOMBRES + APELLIDOS (e.g. ANTONY ESAÚ CARRANZA MONTANO)
   let numApellidos = 2;
-  
   const apellidoTokens = tokens.slice(-numApellidos);
   let nombreTokens = tokens.slice(0, -numApellidos);
 
