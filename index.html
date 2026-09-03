@@ -63,7 +63,11 @@
     padding: 18px 20px 20px;
     box-shadow: 0 2px 4px rgba(0,26,112,0.04);
   }
-  .panel-full { grid-column: 1 / -1; margin-top: 10px; }
+  .panel-full { grid-column: 1 / -1; margin-top: 20px; }
+  .separator {
+    border-top: 2px dashed var(--line);
+    margin: 20px 0;
+  }
   
   label.field-label {
     display: block;
@@ -200,7 +204,7 @@
   </header>
 
   <div class="grid">
-    <!-- PANEL IZQUIERDO: OCR / PROCESAMIENTO -->
+    <!-- PANEL IZQUIERDO -->
     <div class="panel">
       <div class="row">
         <label class="field-label">1. Extraer desde Captura, PDF, Excel o CSV</label>
@@ -227,9 +231,28 @@
       </div>
 
       <div id="status" class="status"></div>
+
+      <div class="separator"></div>
+
+      <div class="row">
+        <label class="field-label" style="font-size: 12px; margin-bottom: 4px;">3. Comparador Masivo: Detectar Estudiantes Faltantes</label>
+        <p style="font-size: 11px; color: #4a5578; margin-top: 0; line-height: 1.4;">Sube uno o varios archivos Excel/CSV para cruzarlos contra la lista principal generada arriba. El sistema te dirá exactamente qué alumnos no aparecen en esos documentos.</p>
+        
+        <div class="file-dropzone" onclick="document.getElementById('compareFileInput').click()">
+          <p>📁 Haz clic para subir <strong>MÚLTIPLES ARCHIVOS</strong> (Excel, CSV, PDF, Imagen)</p>
+          <input type="file" id="compareFileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-bottom: 12px;">
+        <button id="btnCompareParse">GENERAR TABLA COMPARATIVA</button>
+        <button id="btnCompareClear" class="secondary">LIMPIAR COMPARADOR</button>
+      </div>
+
+      <div id="compareStatus" class="status"></div>
     </div>
 
-    <!-- PANEL DERECHO: RESULTADOS / TABLA GENERAL -->
+    <!-- PANEL DERECHO -->
     <div class="panel">
       <div class="panel-head">
         <div id="countPill" class="count-pill"></div>
@@ -258,53 +281,35 @@
       </div>
     </div>
 
-    <!-- PANEL INFERIOR: AUDITORÍA Y COMPARACIÓN MASIVA -->
-    <div class="panel panel-full">
+    <!-- TABLA DE RESULTADOS DE COMPARACIÓN -->
+    <div id="compareResults" class="panel panel-full" style="display: none;">
       <div class="panel-head">
-        <label class="field-label" style="font-size: 13px; margin: 0;">3. Comparador Masivo: Detectar Estudiantes Faltantes</label>
-      </div>
-      <p style="font-size: 12px; color: #4a5578; margin-top: 0;">Sube uno o varios archivos Excel/CSV para cruzarlos contra la lista principal generada arriba. El sistema te dirá exactamente qué alumnos no aparecen en esos documentos.</p>
-      
-      <div class="row">
-        <div class="file-dropzone" onclick="document.getElementById('compareFileInput').click()">
-          <p>📁 Haz clic para subir <strong>MÚLTIPLES ARCHIVOS</strong> (Excel, CSV, PDF, Imagen)</p>
-          <input type="file" id="compareFileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
+        <div id="compareCountPill" class="count-pill"></div>
+        <div class="actions top-actions">
+          <button id="btnCopyCompareTable" class="secondary">COPIAR TABLA COMPLETA</button>
+          <button id="btnCompareCsv" class="secondary">CSV</button>
         </div>
       </div>
 
-      <div class="actions" style="margin-bottom: 12px;">
-        <button id="btnCompareParse">GENERAR TABLA COMPARATIVA</button>
-        <button id="btnCompareClear" class="secondary">LIMPIAR COMPARADOR</button>
+      <div class="actions list-actions">
+        <div class="list-actions-title">COPIAR FALTANTES ESPECÍFICOS:</div>
+        <button id="btnCopyCompareEmails" class="utility">SOLO CORREOS (,)</button>
+        <button id="btnCopyCompareNames" class="utility">SOLO NOMBRES</button>
+        <button id="btnCopyCompareLastNames" class="utility">SOLO APELLIDOS</button>
+        <button id="btnCopyMissing" class="utility" style="border-color: var(--warn); color: var(--warn);">COPIAR ALUMNOS FALTANTES</button>
       </div>
 
-      <div id="compareStatus" class="status"></div>
-
-      <div id="compareResults" style="display: none; margin-top: 15px;">
-        <div class="panel-head">
-          <div id="compareCountPill" class="count-pill"></div>
-          <div class="actions top-actions">
-            <button id="btnCopyCompareTable" class="secondary">COPIAR TABLA COMPLETA</button>
-            <button id="btnCompareCsv" class="secondary">CSV</button>
-          </div>
-        </div>
-
-        <div class="actions list-actions">
-          <div class="list-actions-title">COPIAR FALTANTES ESPECÍFICOS:</div>
-          <button id="btnCopyCompareEmails" class="utility">SOLO CORREOS (,)</button>
-          <button id="btnCopyCompareNames" class="utility">SOLO NOMBRES</button>
-          <button id="btnCopyCompareLastNames" class="utility">SOLO APELLIDOS</button>
-          <button id="btnCopyMissing" class="utility" style="border-color: var(--warn); color: var(--warn);">COPIAR ALUMNOS FALTANTES</button>
-        </div>
-
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr><th>CORREO</th><th>ESTUDIANTE (LISTA MAESTRA)</th><th>ESTADO</th></tr>
-            </thead>
-            <tbody id="compareBody"></tbody>
-          </table>
-        </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>CORREO</th><th>ESTUDIANTE (LISTA MAESTRA)</th><th>ESTADO</th></tr>
+          </thead>
+          <tbody id="compareBody"></tbody>
+        </table>
       </div>
+
+      <!-- AQUÍ APARECERÁ EL MENSAJE DE CONFIRMACIÓN AL COPIAR -->
+      <div id="compareActionStatus" class="status"></div>
     </div>
   </div>
 
@@ -839,13 +844,15 @@ document.getElementById('btnClear').addEventListener('click', () => {
   render([], '');
   document.getElementById('compareResults').style.display = 'none';
   document.getElementById('compareStatus').textContent = '';
+  document.getElementById('compareActionStatus').textContent = '';
 });
 
-function setClipboard(text, successMsg) {
+// FUNCIÓN DE COPIADO AL PORTAPAPELES CON CONTENEDOR FLEXIBLE
+function setClipboard(text, successMsg, statusElement) {
+  const targetElement = statusElement || document.getElementById('status');
   navigator.clipboard.writeText(text).then(() => {
-    const status = document.getElementById('status');
-    status.textContent = successMsg;
-    status.className = 'status ok';
+    targetElement.textContent = successMsg;
+    targetElement.className = 'status ok';
   }).catch(() => {
     alert('Error al copiar al portapapeles.');
   });
@@ -962,6 +969,7 @@ document.getElementById('btnCompareClear').addEventListener('click', () => {
   lastComparisonResults = [];
   document.getElementById('compareFileInput').value = '';
   document.getElementById('compareStatus').textContent = '';
+  document.getElementById('compareActionStatus').textContent = '';
   document.getElementById('compareResults').style.display = 'none';
 });
 
@@ -982,10 +990,13 @@ function renderComparisonResults(results) {
     </tr>
   `).join('');
 
+  document.getElementById('compareActionStatus').textContent = '';
   resultsDiv.style.display = 'block';
 }
 
-// BOTONES DE EXPORTACIÓN DEL COMPARADOR (SECCIÓN 3)
+// ACCIONES DE COPIADO DIRIGIDAS AL CONTENEDOR INFERIOR DEL COMPARADOR
+const compareActionStatus = document.getElementById('compareActionStatus');
+
 document.getElementById('btnCopyCompareTable').addEventListener('click', () => {
   const rows = [...document.querySelectorAll('#compareBody tr')];
   if (rows.length === 0) return;
@@ -993,7 +1004,7 @@ document.getElementById('btnCopyCompareTable').addEventListener('click', () => {
     const cells = [...tr.querySelectorAll('td')];
     return cells.map(td => td.textContent.trim()).join('\t');
   }).join('\n');
-  setClipboard(tsv, 'Tabla comparativa copiada.');
+  setClipboard(tsv, 'Tabla comparativa copiada al portapapeles.', compareActionStatus);
 });
 
 document.getElementById('btnCompareCsv').addEventListener('click', () => {
@@ -1011,7 +1022,6 @@ document.getElementById('btnCompareCsv').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
-// COPIAR SOLO CORREOS DE ALUMNOS FALTANTES
 document.getElementById('btnCopyCompareEmails').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
   if (missingList.length === 0) {
@@ -1019,10 +1029,9 @@ document.getElementById('btnCopyCompareEmails').addEventListener('click', () => 
     return;
   }
   const emails = missingList.map(r => r.email).filter(Boolean).join(', ');
-  setClipboard(emails, 'Correos de alumnos FALTANTES copiados y separados por comas.');
+  setClipboard(emails, 'Correos de alumnos FALTANTES copiados y separados por comas.', compareActionStatus);
 });
 
-// COPIAR SOLO NOMBRES DE ALUMNOS FALTANTES
 document.getElementById('btnCopyCompareNames').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
   if (missingList.length === 0) {
@@ -1030,10 +1039,9 @@ document.getElementById('btnCopyCompareNames').addEventListener('click', () => {
     return;
   }
   const names = missingList.map(r => r.nombre).filter(Boolean).join('\n');
-  setClipboard(names, 'Nombres de alumnos FALTANTES copiados.');
+  setClipboard(names, 'Nombres de alumnos FALTANTES copiados.', compareActionStatus);
 });
 
-// COPIAR SOLO APELLIDOS DE ALUMNOS FALTANTES
 document.getElementById('btnCopyCompareLastNames').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
   if (missingList.length === 0) {
@@ -1041,7 +1049,7 @@ document.getElementById('btnCopyCompareLastNames').addEventListener('click', () 
     return;
   }
   const lastNames = missingList.map(r => r.apellido).filter(Boolean).join('\n');
-  setClipboard(lastNames, 'Apellidos de alumnos FALTANTES copiados.');
+  setClipboard(lastNames, 'Apellidos de alumnos FALTANTES copiados.', compareActionStatus);
 });
 
 document.getElementById('btnCopyMissing').addEventListener('click', () => {
@@ -1051,7 +1059,7 @@ document.getElementById('btnCopyMissing').addEventListener('click', () => {
     return;
   }
   const textToCopy = missingList.map(m => `${m.email}\t${m.fullName}`).join('\n');
-  setClipboard(textToCopy, 'Lista de alumnos faltantes copiada al portapapeles.');
+  setClipboard(textToCopy, 'Lista de alumnos faltantes copiada al portapapeles.', compareActionStatus);
 });
 </script>
 </body>
