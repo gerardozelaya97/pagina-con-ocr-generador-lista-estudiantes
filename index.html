@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Generador - Fotos de Pantalla</title>
+<title>Generador de listas de estudiantes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root { --ink: #001a70; --paper: #f4f6fa; --line: #cfd6e6; --accent: #001a70; --accent-soft: #e6ebf7; --warn: #9c4221; --mono: 'Comfortaa', system-ui, sans-serif; }
+  :root { --ink: #001a70; --paper: #f4f6fa; --line: #cfd6e6; --accent: #001a70; --accent-soft: #e6ebf7; --warn: #9c4221; --ok: #007042; --mono: 'Comfortaa', system-ui, sans-serif; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--mono); padding: 32px 24px 80px; }
   .wrap { max-width: 1100px; margin: 0 auto; }
@@ -31,6 +31,8 @@
   .scanner-container { display: none; margin-bottom: 12px; border: 2px solid var(--accent); border-radius: 8px; overflow: hidden; background: #000; }
   .scanner-preview-wrapper { width: 100%; min-height: 200px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; background: #111; padding: 8px; }
   .scanner-preview-wrapper img { max-width: 48%; max-height: 240px; object-fit: contain; border-radius: 4px; }
+  .doc-info { background: #f0f4ff; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #4a5578; margin-bottom: 10px; display: none; }
+  .doc-info strong { color: var(--accent); }
   textarea, input[type=text] { width: 100%; font-family: var(--mono); font-size: 13px; border: 1px solid var(--line); border-radius: 6px; background: #fbfbfe; color: var(--ink); padding: 10px; }
   textarea { min-height: 180px; resize: vertical; line-height: 1.6; }
   .row { margin-bottom: 14px; }
@@ -43,7 +45,7 @@
   button:hover { opacity: 0.85; }
   button:disabled { opacity: 0.3; cursor: not-allowed; background: var(--line); border-color: var(--line); color: #7a859e; }
   .status { font-size: 12px; margin-top: 10px; min-height: 16px; font-weight: 500; }
-  .status.ok { color: #007042; }
+  .status.ok { color: var(--ok); }
   .status.warn { color: var(--warn); }
   table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
   th { text-align: left; font-size: 11px; text-transform: uppercase; background: var(--accent-soft); color: var(--accent); padding: 10px; border-bottom: 2px solid var(--accent); font-weight: 700; }
@@ -66,7 +68,7 @@
 <div class="wrap">
   <header>
     <h1>Generador de listas de estudiantes</h1>
-    <span class="tag">Conectado a Python API</span>
+    <span class="tag">IA + OCR</span>
   </header>
 
   <div class="grid">
@@ -74,12 +76,13 @@
       <div class="row">
         <label class="field-label">1. EXTRAER DESDE IMAGEN, PDF, EXCEL O CSV</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
-          <p>📷 Subir foto(s) de pantalla o <strong>CTRL + V</strong> para pegar</p>
-          <small>Puedes seleccionar varias imágenes si la lista es de más de 1 página</small>
+          <p>📷 Sube imagen(es), PDF, Excel o CSV</p>
+          <small>Para imágenes: puedes seleccionar varias si la lista tiene más de 1 página</small>
           <input type="file" id="fileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
         </div>
 
         <div id="thumbList" class="thumb-list"></div>
+        <div id="docInfo" class="doc-info"></div>
 
         <div id="scannerBox" class="scanner-container">
           <div id="scannerPreview" class="scanner-preview-wrapper"></div>
@@ -151,16 +154,14 @@
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// URL del puerto público devtunnels de VS Code
-// const API_URL = "http://172.16.50.151:8000/api/scan";
-// const API_URL = "https://q9h81nrt-8000.use.devtunnels.ms/api/scan";
+// ============ URL DEL BACKEND EN RENDER ============
 const API_URL = "https://pagina-con-ocr-generador-lista.onrender.com/api/scan";
 
 let rawOcrBuffer = '';
 let currentParsedStudents = [];
 let currentNominaStudents = [];
 let currentImageNominaRows = [];
-let selectedImages = [];  // Array de File (imágenes pendientes de procesar)
+let selectedImages = [];
 const CONNECTORS = new Set(["DE", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA", "VDA", "Y"]);
 
 function log(msg) {
@@ -186,12 +187,8 @@ function isValidStudentName(name) {
 const normalizeDigits = str => str
   .replace(/O/g,'0').replace(/o/g,'0').replace(/D/g,'0').replace(/d/g,'0').replace(/Q/g,'0').replace(/q/g,'0')
   .replace(/I/g,'1').replace(/i/g,'1').replace(/L/g,'1').replace(/l/g,'1').replace(/\|/g,'1').replace(/!/g,'1')
-  .replace(/Z/g,'2').replace(/z/g,'2')
-  .replace(/E/g,'3').replace(/e/g,'3')
-  .replace(/A/g,'4').replace(/a/g,'4')
-  .replace(/S/g,'5').replace(/s/g,'5')
-  .replace(/G/g,'6').replace(/g/g,'6')
-  .replace(/T/g,'7').replace(/t/g,'7')
+  .replace(/Z/g,'2').replace(/z/g,'2').replace(/E/g,'3').replace(/e/g,'3').replace(/A/g,'4').replace(/a/g,'4')
+  .replace(/S/g,'5').replace(/s/g,'5').replace(/G/g,'6').replace(/g/g,'6').replace(/T/g,'7').replace(/t/g,'7')
   .replace(/B/g,'8').replace(/b/g,'8');
 
 function extractNieFromText(str) {
@@ -231,66 +228,59 @@ function extractStudentsFromText(fullText) {
   const lines = fullText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const students = [];
   const seen = new Set();
-
   for (const line of lines) {
-    if (/Sede Educativa|Dirección|Teléfono|Servicio Educativo|Plan de Estudio|Sección|Año lectivo|MINISTERIO|GERENCIA|DEPARTAMENTO|MATRÍCULA|Director/i.test(line)) {
-      continue;
-    }
+    if (/Sede Educativa|Dirección|Teléfono|Servicio Educativo|Plan de Estudio|Sección|Año lectivo|MINISTERIO|GERENCIA|DEPARTAMENTO|MATRÍCULA|Director/i.test(line)) continue;
     const nieInfo = extractNieFromText(line);
     if (!nieInfo.nie || !isValidNie(nieInfo.nie)) continue;
     if (seen.has(nieInfo.nie)) continue;
-
     let name = line.replace(nieInfo.rawMatch, ' ');
     name = cleanName(name);
     if (!isValidStudentName(name)) continue;
-
     seen.add(nieInfo.nie);
     students.push({ nie: nieInfo.nie, nombre: name });
   }
   return students;
 }
 
-// ==================== MANEJO DE ARCHIVOS ====================
+// ============ MANEJO DE ARCHIVOS ============
 
 document.getElementById('fileInput').addEventListener('change', e => {
   handleFiles([...e.target.files]);
-  e.target.value = '';  // permite volver a subir el mismo archivo
+  e.target.value = '';
 });
 
 document.addEventListener('paste', e => {
   const items = [...(e.clipboardData?.items || [])].filter(x => x.type.includes('image'));
-  if (items.length) {
-    handleFiles(items.map(i => i.getAsFile()));
-  }
+  if (items.length) handleFiles(items.map(i => i.getAsFile()));
 });
 
-function handleFiles(files) {
+async function handleFiles(files) {
   if (!files.length) return;
-
   const status = document.getElementById('status');
 
-  // Si son Excel/CSV/PDF, los procesamos individualmente (como antes)
-  const isSpreadsheet = files.some(f => ['xlsx','xls','csv'].includes((f.name||'').split('.').pop().toLowerCase()));
-  const isPdf = files.some(f => (f.name||'').toLowerCase().endsWith('.pdf'));
+  // Clasificar: imágenes vs documentos
+  const images = files.filter(f => f.type.startsWith('image/'));
+  const docs = files.filter(f => !f.type.startsWith('image/'));
 
-  if (isSpreadsheet || isPdf) {
-    // Sólo procesamos el primero (comportamiento original)
-    processDocument(files[0]);
+  // Si hay documentos (PDF/Excel/CSV), procesar el primero
+  if (docs.length > 0) {
+    await processDocument(docs[0]);
+    // Si además hay imágenes, las agregamos también
+    if (images.length > 0) {
+      images.forEach(f => selectedImages.push(f));
+      renderThumbs();
+      actualizarBotonProcesar();
+    }
     return;
   }
 
-  // Imágenes: agregar a la lista de seleccionadas
-  files.forEach(f => {
-    if (f && f.type.startsWith('image/')) {
-      selectedImages.push(f);
-    }
-  });
-
+  // Solo imágenes: agregar a la lista de seleccionadas
+  images.forEach(f => selectedImages.push(f));
   renderThumbs();
   actualizarBotonProcesar();
 
   if (selectedImages.length > 0) {
-    status.textContent = `${selectedImages.length} imagen(es) lista(s) para procesar. Presiona "PROCESAR IMÁGENES CON IA".`;
+    status.textContent = `${selectedImages.length} imagen(es) lista(s). Presiona "PROCESAR IMÁGENES CON IA".`;
     status.className = 'status ok';
   }
 }
@@ -310,9 +300,7 @@ function quitarImagen(idx) {
   selectedImages.splice(idx, 1);
   renderThumbs();
   actualizarBotonProcesar();
-  if (selectedImages.length === 0) {
-    document.getElementById('status').textContent = '';
-  }
+  if (selectedImages.length === 0) document.getElementById('status').textContent = '';
 }
 
 function actualizarBotonProcesar() {
@@ -320,28 +308,26 @@ function actualizarBotonProcesar() {
 }
 
 async function processDocument(file) {
-  // Manejo legacy para PDF/Excel/CSV
   const status = document.getElementById('status');
-  status.textContent = 'Procesando...';
+  const docInfo = document.getElementById('docInfo');
+  status.textContent = 'Procesando documento...';
   status.className = 'status';
+  document.getElementById('scannerBox').style.display = 'none';
 
   try {
     let ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+    let totalStudents = 0;
+    let tipo = '';
 
     if (['xlsx', 'xls', 'csv'].includes(ext)) {
-      document.getElementById('scannerBox').style.display = 'none';
       const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
       const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
       rawOcrBuffer = rows.map(r => r.join(' ')).join('\n');
       currentNominaStudents = extractStudentsFromText(rawOcrBuffer);
-
-      const totalStudents = currentNominaStudents.length;
-      status.textContent = totalStudents > 0 ? `✅ ${totalStudents} estudiante(s) detectados.` : '❌ No se encontraron estudiantes.';
-      status.className = totalStudents > 0 ? 'status ok' : 'status warn';
-      ['btnTransferOcr', 'btnExtractNomina'].forEach(id => document.getElementById(id).disabled = totalStudents === 0);
+      totalStudents = currentNominaStudents.length;
+      tipo = ext.toUpperCase();
 
     } else if (ext === 'pdf') {
-      document.getElementById('scannerBox').style.display = 'none';
       const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
       let text = '';
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -351,59 +337,67 @@ async function processDocument(file) {
       }
       rawOcrBuffer = text;
       currentNominaStudents = extractStudentsFromText(rawOcrBuffer);
+      totalStudents = currentNominaStudents.length;
+      tipo = `PDF (${pdf.numPages} pág.)`;
 
-      const totalStudents = currentNominaStudents.length;
-      status.textContent = totalStudents > 0 ? `✅ ${totalStudents} estudiante(s) detectados.` : '❌ No se encontraron estudiantes.';
-      status.className = totalStudents > 0 ? 'status ok' : 'status warn';
-      ['btnTransferOcr', 'btnExtractNomina'].forEach(id => document.getElementById(id).disabled = totalStudents === 0);
+    } else {
+      // Otro tipo: no soportado
+      status.textContent = `⚠️ Tipo de archivo no soportado: .${ext}`;
+      status.className = 'status warn';
+      return;
     }
+
+    if (totalStudents > 0) {
+      status.textContent = `✅ ${totalStudents} estudiante(s) detectados en ${tipo}. Presiona "PASAR DATOS A LA TABLA".`;
+      status.className = 'status ok';
+      docInfo.style.display = 'block';
+      docInfo.innerHTML = `📄 <strong>${file.name}</strong> — ${totalStudents} estudiante(s)`;
+      document.getElementById('btnTransferOcr').disabled = false;
+      document.getElementById('btnExtractNomina').disabled = false;
+    } else {
+      status.textContent = `⚠️ El archivo ${tipo} se procesó pero no se detectaron estudiantes.`;
+      status.className = 'status warn';
+      docInfo.style.display = 'block';
+      docInfo.innerHTML = `📄 <strong>${file.name}</strong> — 0 estudiantes detectados`;
+    }
+
   } catch (err) {
-    console.error('Error detallado:', err);
-    status.textContent = `❌ Error: ${err.message || err.name || 'desconocido'}`;
+    console.error('Error:', err);
+    status.textContent = `❌ Error procesando ${file.name}: ${err.message || err.name}`;
     status.className = 'status warn';
   }
 }
 
-// ==================== PROCESAMIENTO CON IA (1 o N imágenes) ====================
+// ============ PROCESAMIENTO CON IA ============
 
 document.getElementById('btnProcessImages').addEventListener('click', async () => {
   if (selectedImages.length === 0) return;
-
   const status = document.getElementById('status');
   status.textContent = `Enviando ${selectedImages.length} imagen(es) a la IA...`;
   status.className = 'status';
 
-  // Vista previa
   const preview = document.getElementById('scannerPreview');
   preview.innerHTML = selectedImages.map(f => `<img src="${URL.createObjectURL(f)}" alt="">`).join('');
   document.getElementById('scannerBox').style.display = 'block';
 
-  // Desactivar botones mientras procesa
   ['btnTransferOcr', 'btnExtractNomina', 'btnProcessImages'].forEach(id => document.getElementById(id).disabled = true);
 
   try {
     const formData = new FormData();
     selectedImages.forEach(f => formData.append('files', f));
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'X-Tunnel-Skip-Anti-Phishing-Page': 'true'
-      },
-      body: formData
-    });
+    const response = await fetch(API_URL, { method: 'POST', body: formData });
 
     if (!response.ok) {
       const errText = await response.text();
       console.error('Backend error:', response.status, errText);
-
       if (response.status === 503) {
         status.textContent = '⏳ El modelo está saturado. Intenta de nuevo en unos segundos.';
       } else {
         status.textContent = `❌ Error del servidor (${response.status}). Revisa la consola.`;
       }
       status.className = 'status warn';
-      ['btnProcessImages'].forEach(id => document.getElementById(id).disabled = false);
+      document.getElementById('btnProcessImages').disabled = false;
       return;
     }
 
@@ -413,7 +407,6 @@ document.getElementById('btnProcessImages').addEventListener('click', async () =
       currentImageNominaRows = data.students;
       status.textContent = `✅ ${data.total} estudiante(s) detectados con IA (${selectedImages.length} imagen/es).`;
       status.className = 'status ok';
-
       document.getElementById('btnTransferOcr').disabled = false;
       document.getElementById('btnExtractNomina').disabled = false;
     } else {
@@ -421,7 +414,6 @@ document.getElementById('btnProcessImages').addEventListener('click', async () =
       status.className = 'status warn';
       document.getElementById('btnProcessImages').disabled = false;
     }
-
   } catch (err) {
     console.error('Error detallado:', err);
     status.textContent = `❌ Error: ${err.message || err.name || 'desconocido'}`;
@@ -430,7 +422,7 @@ document.getElementById('btnProcessImages').addEventListener('click', async () =
   }
 });
 
-// ==================== RESTO DEL FLUJO (igual que antes) ====================
+// ============ RESTO DEL FLUJO ============
 
 function splitName(fullName) {
   let cleanStr = fullName.replace(/@[\w.-]+/gi, '').replace(/\s+/g, ' ').trim();
@@ -452,7 +444,9 @@ document.getElementById('btnExtractNomina').addEventListener('click', () => {
   const rows = currentImageNominaRows.length > 0 ? currentImageNominaRows : currentNominaStudents;
   currentNominaStudents = rows;
   const tbody = document.getElementById('nominaBody');
-  tbody.innerHTML = rows.length ? rows.map(r => `<tr><td contenteditable="true">${r.nie || ''}</td><td contenteditable="true">${r.nombre || ''}</td></tr>`).join('') : `<tr><td colspan="2" class="empty-hint">Sin datos.</td></tr>`;
+  tbody.innerHTML = rows.length
+    ? rows.map(r => `<tr><td contenteditable="true">${r.nie || ''}</td><td contenteditable="true">${r.nombre || ''}</td></tr>`).join('')
+    : `<tr><td colspan="2" class="empty-hint">Sin datos.</td></tr>`;
   document.getElementById('nominaCountPill').textContent = `${rows.length} estudiante(s)`;
   document.getElementById('nominaResults').style.display = 'block';
 });
@@ -464,7 +458,6 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
     const parts = splitName(r.nombre);
     return { nie: r.nie, apellido: parts.apellido, nombre: parts.nombre, review: parts.review };
   });
-
   const uniqueRows = [];
   const seen = new Set();
   for (const row of rows) {
@@ -472,7 +465,6 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
     seen.add(row.nie);
     uniqueRows.push(row);
   }
-
   currentParsedStudents = uniqueRows;
   document.getElementById('raw').value = uniqueRows.map(r => `${r.nie} ${r.apellido}, ${r.nombre}`).join('\n');
   render(uniqueRows, domain);
@@ -483,14 +475,12 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
 function render(rows, domain) {
   const body = document.getElementById('outBody'), pill = document.getElementById('countPill');
   const btns = ['btnCopy', 'btnCsv', 'btnCopyEmails', 'btnCopyNames', 'btnCopyLastNames'].map(id => document.getElementById(id));
-
   if (!rows.length) {
     body.innerHTML = `<tr><td colspan="3" class="empty-hint">La tabla aparecerá aquí.</td></tr>`;
     pill.textContent = '';
     btns.forEach(b => b.disabled = true);
     return;
   }
-
   pill.textContent = `${rows.length} estudiante(s)`;
   body.innerHTML = rows.map(r => `<tr class="${r.review ? 'review-row' : ''}"><td contenteditable="true">${r.nie ? `${r.nie}${domain}` : ''}</td><td contenteditable="true">${r.apellido}</td><td contenteditable="true">${r.nombre}</td></tr>`).join('');
   btns.forEach(b => b.disabled = false);
@@ -517,11 +507,12 @@ document.getElementById('btnClear').addEventListener('click', () => {
   document.getElementById('thumbList').innerHTML = '';
   document.getElementById('scannerPreview').innerHTML = '';
   document.getElementById('scannerBox').style.display = 'none';
+  document.getElementById('docInfo').style.display = 'none';
   document.getElementById('logBox').style.display = 'none';
   document.getElementById('logBox').innerHTML = '';
-  ['status'].forEach(id => document.getElementById(id).textContent = '');
+  document.getElementById('status').textContent = '';
   ['btnTransferOcr','btnExtractNomina','btnProcessImages'].forEach(id => document.getElementById(id).disabled = true);
-  ['nominaResults'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('nominaResults').style.display = 'none';
   render([], '');
 });
 
