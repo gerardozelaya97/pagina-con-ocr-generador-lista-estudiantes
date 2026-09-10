@@ -14,7 +14,7 @@
   :root {
     --ink: #001a70; --paper: #f4f6fa; --line: #cfd6e6; --accent: #001a70;
     --accent-soft: #e6ebf7; --warn: #9c4221; --warn-soft: #f7e9e2;
-    --ok: #007042; --mono: 'Comfortaa', system-ui, sans-serif;
+    --ok: #007042; --ok-soft: #e0f4ea; --mono: 'Comfortaa', system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Comfortaa', system-ui, sans-serif; padding: 32px 24px 80px; }
@@ -145,6 +145,74 @@
     line-height: 1.5;
   }
   .help-note strong { color: var(--warn); }
+
+  /* ============ AVISO IMPORTANTE ============ */
+  .warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-left: 4px solid #ff9800;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 12px 0;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #6b4e00;
+  }
+  .warning-box strong { color: #b85c00; }
+  .warning-box .icon { font-size: 16px; margin-right: 6px; }
+
+  /* Modal de advertencia */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 26, 112, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    max-width: 480px;
+    width: 100%;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    border-top: 5px solid #ff9800;
+  }
+  .modal h2 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #b85c00;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal p {
+    margin: 0 0 14px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #2a3558;
+  }
+  .modal .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  .modal .modal-actions button { font-size: 12px; }
+  .modal .btn-cancel {
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .modal .btn-confirm {
+    background: #ff9800;
+    border-color: #ff9800;
+    color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -163,14 +231,15 @@
         <h3>👋 ¿Cómo se usa? Es muy fácil</h3>
         <ol class="help-steps">
           <li>
-            <strong>Pon tu foto aquí</strong> 👇<br>
+            <strong>Pon tu foto o archivo aquí</strong> 👇<br>
             Toca el cuadro con la línea punteada y elige una foto o un archivo.
             <em>También puedes copiar una foto (Ctrl+C) y pegarla aquí (Ctrl+V).</em>
           </li>
           <li>
             <strong>Toca uno de los dos botones azules:</strong><br>
-            <span class="help-badge ia">✨ CON IA</span> <em>Lee mejor la letra. Tarda un poquito más.</em><br>
-            <span class="help-badge local">⚡ SIN IA</span> <em>Más rápido. Sirve para Excel y Word.</em>
+            <span class="help-badge ia">✨ CON IA</span> <strong>Úsalo siempre para FOTOS.</strong>
+            <em>Es la única forma de leer bien las fotos.</em><br>
+            <span class="help-badge local">⚡ SIN IA</span> <em>Solo para Excel, CSV y PDF. NO uses con fotos.</em>
           </li>
           <li>
             <strong>Espera un momento.</strong><br>
@@ -190,17 +259,20 @@
             Puedes copiar los correos, los nombres, o la lista completa para llevarla a Excel.
           </li>
         </ol>
-        <div class="help-note">
-          <strong>⭐ Consejo:</strong> Si la opción CON IA se tarda mucho o da error,
-          usa mejor la opción SIN IA. ¡Funciona igual y es más rápida!
-        </div>
+      </div>
+
+      <!-- ============ AVISO IMPORTANTE ============ -->
+      <div class="warning-box">
+        <span class="icon">⚠️</span>
+        <strong>Recuerda:</strong> Las <strong>fotos e imágenes</strong> SOLO se leen bien con
+        <strong>"✨ LEER CON IA"</strong>. Si eliges "⚡ SIN IA" con una foto, los nombres saldrán mal.
       </div>
 
       <div class="row">
         <label class="field-label">1. Pon aquí tu foto o archivo</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
           <p>📷 Toca aquí para poner tu foto o archivo</p>
-          <small>Puedes poner fotos, PDF, Excel o CSV · También puedes pegarla con CTRL + V</small>
+          <small>Fotos (📷 solo con IA) · PDF, Excel, CSV (cualquiera de las dos)</small>
           <input type="file" id="fileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
         </div>
 
@@ -209,10 +281,10 @@
 
         <div class="actions" style="margin-top: 8px;">
           <button id="btnProcessIA" class="btn-ia" style="flex: 1; min-width: 180px;" disabled>
-            ✨ LEER CON IA (mejor)
+            ✨ LEER CON IA (para fotos)
           </button>
           <button id="btnProcessLocal" class="secondary" style="flex: 1; min-width: 180px;" disabled>
-            ⚡ LEER SIN IA (rápido)
+            ⚡ SIN IA (solo PDF/Excel)
           </button>
         </div>
 
@@ -321,6 +393,27 @@
   </footer>
 </div>
 
+<!-- ============ MODAL DE ADVERTENCIA ============ -->
+<div id="warningModal" class="modal-overlay">
+  <div class="modal">
+    <h2>⚠️ Las fotos necesitan IA</h2>
+    <p>
+      Has subido una <strong>foto o imagen</strong> pero elegiste <strong>"⚡ SIN IA"</strong>.
+    </p>
+    <p>
+      El modo SIN IA <strong>NO lee bien las fotos</strong>: los nombres y NIE van a salir mal o incompletos.
+      Está pensado solo para <strong>Excel, CSV y PDF con texto</strong>.
+    </p>
+    <p>
+      <strong>¿Qué quieres hacer?</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModalYUsarLocal()">Usar SIN IA de todos modos</button>
+      <button class="btn-confirm" onclick="cerrarModalYUsarIA()">✨ Usar CON IA (recomendado)</button>
+    </div>
+  </div>
+</div>
+
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -349,6 +442,26 @@ function setStatus(el, msg, type) {
   const target = typeof el === 'string' ? document.getElementById(el) : el;
   target.textContent = msg;
   target.className = 'status' + (type ? ' ' + type : '');
+}
+
+// ==================== MODAL DE ADVERTENCIA ====================
+function mostrarModalAdvertencia() {
+  document.getElementById('warningModal').classList.add('active');
+}
+
+function cerrarModal() {
+  document.getElementById('warningModal').classList.remove('active');
+}
+
+function cerrarModalYUsarLocal() {
+  cerrarModal();
+  ejecutarProcesamientoLocal();
+}
+
+function cerrarModalYUsarIA() {
+  cerrarModal();
+  // Simular click en el botón de IA
+  document.getElementById('btnProcessIA').click();
 }
 
 // ==================== MANEJO DE ARCHIVOS ====================
@@ -380,7 +493,7 @@ function handleFiles(files) {
   renderThumbs();
   updateActionButtons();
   if (selectedImages.length > 0) {
-    setStatus('status', `${selectedImages.length} imagen(es) lista(s). Elige CON IA o SIN IA.`, 'ok');
+    setStatus('status', `📷 ${selectedImages.length} imagen(es) lista(s). Usa "✨ LEER CON IA" para mejor precisión.`, 'ok');
   }
 }
 
@@ -412,7 +525,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
   if (selectedImages.length === 0 && !selectedDoc) return;
 
   const status = document.getElementById('status');
-  setStatus(status, 'Leyendo con IA...', '');
+  setStatus(status, 'Leyendo con IA... (esto tarda un poco)', '');
 
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
@@ -437,7 +550,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
         log(`[IA] ${data.total} estudiantes detectados.`);
         document.getElementById('btnTransferOcr').disabled = false;
       } else {
-        setStatus(status, '❌ No se pudieron leer estudiantes. Intenta con "SIN IA".', 'warn');
+        setStatus(status, '❌ No se pudieron leer estudiantes. Intenta con otra foto.', 'warn');
         document.getElementById('btnProcessIA').disabled = false;
         document.getElementById('btnProcessLocal').disabled = false;
       }
@@ -463,7 +576,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
         log(`[IA] ${data.total} estudiantes detectados del PDF.`);
         document.getElementById('btnTransferOcr').disabled = false;
       } else {
-        setStatus(status, '❌ No se pudieron leer estudiantes en el PDF. Intenta con "SIN IA".', 'warn');
+        setStatus(status, '❌ No se pudieron leer estudiantes en el PDF.', 'warn');
         document.getElementById('btnProcessIA').disabled = false;
         document.getElementById('btnProcessLocal').disabled = false;
       }
@@ -475,20 +588,35 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
 
   } catch (err) {
     console.error(err);
-    log(`[IA] Error: ${err.message}. Cambiando a SIN IA...`);
-    setStatus(status, '⚠️ La IA no está disponible. Se usará SIN IA automáticamente...', 'warn');
+    log(`[IA] Error: ${err.message}.`);
+    setStatus(status, '⚠️ La IA no está disponible. Intenta de nuevo en unos segundos.', 'warn');
 
-    if (selectedImages.length > 0) {
-      await processImagesLocal();
-    } else if (selectedDoc) {
+    document.getElementById('btnProcessIA').disabled = false;
+    document.getElementById('btnProcessLocal').disabled = false;
+
+    // Auto-fallback SOLO para documentos (no imágenes), porque las imágenes sin IA no sirven
+    if (selectedDoc && !selectedImages.length) {
+      log(`[Auto] Reintentando con OCR local (documento)...`);
       await processDocumentLocal(selectedDoc);
     }
   }
 });
 
 // ==================== LEER SIN IA ====================
-document.getElementById('btnProcessLocal').addEventListener('click', async () => {
+document.getElementById('btnProcessLocal').addEventListener('click', () => {
   if (selectedImages.length === 0 && !selectedDoc) return;
+
+  // ⚠️ Si hay imágenes seleccionadas → mostrar advertencia
+  if (selectedImages.length > 0) {
+    mostrarModalAdvertencia();
+    return;
+  }
+
+  // Solo documentos → ejecutar directo
+  ejecutarProcesamientoLocal();
+});
+
+async function ejecutarProcesamientoLocal() {
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
   try {
@@ -502,11 +630,11 @@ document.getElementById('btnProcessLocal').addEventListener('click', async () =>
     setStatus('status', '❌ Hubo un error al leer. Intenta de nuevo.', 'warn');
     document.getElementById('btnProcessLocal').disabled = false;
   }
-});
+}
 
 async function processImagesLocal() {
   const status = document.getElementById('status');
-  setStatus(status, `Leyendo ${selectedImages.length} imagen(es) sin IA...`, '');
+  setStatus(status, `Leyendo ${selectedImages.length} imagen(es) sin IA... (los resultados pueden tener errores)`, '');
 
   let allText = '';
   for (let i = 0; i < selectedImages.length; i++) {
@@ -521,10 +649,10 @@ async function processImagesLocal() {
   rawOcrBuffer = cleanOCRNoise(allText);
 
   if (rawOcrBuffer.trim()) {
-    setStatus(status, '✅ ¡Listo! Ahora toca "PASAR DATOS A LA TABLA".', 'ok');
+    setStatus(status, '⚠️ Leído sin IA. REVISA BIEN los nombres: puede haber errores. Toca "PASAR DATOS A LA TABLA".', 'warn');
     document.getElementById('btnTransferOcr').disabled = false;
   } else {
-    setStatus(status, '⚠️ No se pudo leer texto. Prueba con otra foto o usa CON IA.', 'warn');
+    setStatus(status, '⚠️ No se pudo leer texto. Mejor usa "✨ LEER CON IA".', 'warn');
     document.getElementById('btnProcessIA').disabled = false;
     document.getElementById('btnProcessLocal').disabled = false;
   }
