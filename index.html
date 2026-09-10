@@ -70,6 +70,81 @@
   .btn-ia { background: linear-gradient(135deg, #001a70, #0033a0); }
   .btn-ia:hover { background: linear-gradient(135deg, #001250, #002080); }
   #logBox { display: none; margin-top: 8px; font-size: 11px; color: #4a5578; background: #f0f4ff; padding: 8px; border-radius: 6px; max-height: 200px; overflow-y: auto; }
+
+  /* ============ SECCIÓN DE INSTRUCCIONES ============ */
+  .help-box {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6ebf7 100%);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .help-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .help-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step;
+  }
+  .help-steps li {
+    position: relative;
+    padding: 6px 0 6px 32px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #2a3558;
+    counter-increment: step;
+    border-bottom: 1px dashed rgba(207,214,230,0.5);
+  }
+  .help-steps li:last-child { border-bottom: none; }
+  .help-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .help-steps strong { color: var(--accent); font-weight: 700; }
+  .help-steps em { color: #4a5578; font-style: normal; font-size: 10.5px; display: inline-block; }
+  .help-badge {
+    display: inline-block;
+    font-size: 9.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-left: 4px;
+    letter-spacing: 0.3px;
+  }
+  .help-badge.ia { background: var(--accent); color: #fff; }
+  .help-badge.local { background: #fff; color: var(--accent); border: 1px solid var(--accent); }
+  .help-note {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(207,214,230,0.8);
+    font-size: 10.5px;
+    color: #4a5578;
+    line-height: 1.5;
+  }
+  .help-note strong { color: var(--warn); }
 </style>
 </head>
 <body>
@@ -82,6 +157,43 @@
   <div class="grid">
     <!-- ============ PANEL IZQUIERDO ============ -->
     <div class="panel">
+
+      <!-- ============ GUÍA DE USO ============ -->
+      <div class="help-box">
+        <h3> ¿Cómo usar este sistema?</h3>
+        <ol class="help-steps">
+          <li>
+            <strong>Sube tu archivo</strong> (imagen, PDF, Excel o CSV) en el recuadro azul punteado.
+            Puedes arrastrar varias imágenes a la vez si el listado tiene varias páginas.
+            <em>También puedes pegar con CTRL + V.</em>
+          </li>
+          <li>
+            <strong>Elige el motor de procesamiento:</strong><br>
+            <span class="help-badge ia">✨ IA</span> Imágenes y PDF (más preciso, ~10-60s)<br>
+            <span class="help-badge local">⚡ LOCAL</span> Cualquier tipo (rápido, funciona sin internet)
+          </li>
+          <li>
+            <strong>Presiona "PASAR DATOS A LA TABLA"</strong> cuando el sistema diga que ya procesó el archivo.
+          </li>
+          <li>
+            <strong>Revisa y corrige la tabla</strong> de la derecha. Las filas naranjas necesitan
+            revisión manual (doble clic para editar cualquier celda).
+          </li>
+          <li>
+            <strong>Copia los datos</strong> con los botones azules: correos, nombres, apellidos o la tabla
+            completa para pegar en Excel. También puedes descargar el CSV.
+          </li>
+          <li>
+            <strong>Opcional — Comparador Masivo:</strong> sube otros listados (Excel/CSV) en la
+            Sección 3 para detectar qué estudiantes de tu lista principal NO aparecen en esos archivos.
+          </li>
+        </ol>
+        <div class="help-note">
+          <strong> Tip:</strong> Si la IA tarda o falla por saturación de Google, el sistema cambia
+          automáticamente al OCR local para que no te quedes sin resultado.
+        </div>
+      </div>
+
       <div class="row">
         <label class="field-label">1. Extraer desde Captura, PDF, Excel o CSV</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
@@ -93,7 +205,6 @@
         <div id="thumbList" class="thumb-list"></div>
         <div id="docInfo" class="doc-info"></div>
 
-        <!-- Botones de OCR -->
         <div class="actions" style="margin-top: 8px;">
           <button id="btnProcessIA" class="btn-ia" style="flex: 1; min-width: 180px;" disabled>
             ✨ PROCESAR CON IA
@@ -304,7 +415,6 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
   try {
-    // Imágenes → enviar a Gemini
     if (selectedImages.length > 0) {
       const formData = new FormData();
       selectedImages.forEach(f => formData.append('files', f));
@@ -330,7 +440,6 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
         document.getElementById('btnProcessLocal').disabled = false;
       }
     }
-    // PDF → también se envía a Gemini
     else if (selectedDoc && selectedDoc.name.toLowerCase().endsWith('.pdf')) {
       const formData = new FormData();
       formData.append('files', selectedDoc);
@@ -357,7 +466,6 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
         document.getElementById('btnProcessLocal').disabled = false;
       }
     }
-    // Excel/CSV → siempre OCR local (no aplica IA)
     else if (selectedDoc) {
       log(`[Local] Excel/CSV → OCR local (no aplica IA).`);
       await processDocumentLocal(selectedDoc);
