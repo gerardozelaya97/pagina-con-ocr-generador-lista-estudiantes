@@ -11,159 +11,220 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root { --ink: #001a70; --paper: #f4f6fa; --line: #cfd6e6; --accent: #001a70; --accent-soft: #e6ebf7; --warn: #9c4221; --ok: #007042; --mono: 'Comfortaa', system-ui, sans-serif; }
+  :root {
+    --ink: #001a70; --paper: #f4f6fa; --line: #cfd6e6; --accent: #001a70;
+    --accent-soft: #e6ebf7; --warn: #9c4221; --warn-soft: #f7e9e2;
+    --ok: #007042; --mono: 'Comfortaa', system-ui, sans-serif;
+  }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--mono); padding: 32px 24px 80px; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Comfortaa', system-ui, sans-serif; padding: 32px 24px 80px; }
   .wrap { max-width: 1100px; margin: 0 auto; }
   header { border-bottom: 3px solid var(--ink); padding-bottom: 16px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
-  h1 { font-size: 24px; margin: 0; font-weight: 700; }
-  .tag { font-size: 11px; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: 0.3px; font-weight: 700; }
+  .tag { font-family: var(--mono); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); border: 1px solid var(--accent); padding: 4px 10px; border-radius: 6px; font-weight: 600; }
   .grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
   @media (min-width: 860px) { .grid { grid-template-columns: 1fr 1fr; align-items: start; } }
-  .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px 20px; }
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px 20px; box-shadow: 0 2px 4px rgba(0,26,112,0.04); }
   .panel-full { grid-column: 1 / -1; margin-top: 20px; }
-  label.field-label { display: block; font-size: 11px; text-transform: uppercase; color: #4a5578; margin-bottom: 8px; font-weight: 600; }
-  .file-dropzone { border: 2px dashed var(--accent); border-radius: 6px; padding: 14px 10px; text-align: center; background: #f0f4ff; cursor: pointer; margin-bottom: 10px; }
+  .separator { border-top: 2px dashed var(--line); margin: 20px 0; }
+  label.field-label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #4a5578; margin-bottom: 8px; font-weight: 600; }
+  .file-dropzone { border: 2px dashed var(--accent); border-radius: 6px; padding: 14px 10px; text-align: center; background: #f0f4ff; cursor: pointer; transition: background 0.2s, border-color 0.2s; margin-bottom: 10px; }
   .file-dropzone:hover { background: var(--accent-soft); }
-  .file-dropzone p { margin: 0; font-size: 11px; font-weight: 600; }
+  .file-dropzone p { margin: 0; font-size: 11px; color: var(--ink); font-weight: 600; }
   .file-dropzone small { display: block; margin-top: 4px; font-size: 10px; color: #4a5578; }
   .file-dropzone input[type=file] { display: none; }
-  .scanner-container { display: none; margin-bottom: 12px; border: 2px solid var(--accent); border-radius: 8px; overflow: hidden; background: #000; }
-  .scanner-preview-wrapper { width: 100%; min-height: 200px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; background: #111; padding: 8px; }
-  .scanner-preview-wrapper img { max-width: 48%; max-height: 240px; object-fit: contain; border-radius: 4px; }
-  .doc-info { background: #f0f4ff; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #4a5578; margin-bottom: 10px; display: none; }
-  .doc-info strong { color: var(--accent); }
-  textarea, input[type=text] { width: 100%; font-family: var(--mono); font-size: 13px; border: 1px solid var(--line); border-radius: 6px; background: #fbfbfe; color: var(--ink); padding: 10px; }
-  textarea { min-height: 180px; resize: vertical; line-height: 1.6; }
-  .row { margin-bottom: 14px; }
-  .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-  .list-actions { margin-top: 8px; margin-bottom: 14px; padding-top: 8px; border-top: 1px dashed var(--line); }
-  .list-actions-title { font-size: 11px; color: #4a5578; width: 100%; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
-  button { font-family: var(--mono); font-size: 11px; text-transform: uppercase; padding: 10px 16px; border-radius: 6px; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor: pointer; font-weight: 600; }
-  button.secondary { background: #fff; color: var(--ink); }
-  button.utility { font-size: 10px; padding: 6px 12px; background: #fff; color: var(--accent); border-color: var(--accent); }
-  button:hover { opacity: 0.85; }
-  button:disabled { opacity: 0.3; cursor: not-allowed; background: var(--line); border-color: var(--line); color: #7a859e; }
-  .status { font-size: 12px; margin-top: 10px; min-height: 16px; font-weight: 500; }
-  .status.ok { color: var(--ok); }
-  .status.warn { color: var(--warn); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
-  th { text-align: left; font-size: 11px; text-transform: uppercase; background: var(--accent-soft); color: var(--accent); padding: 10px; border-bottom: 2px solid var(--accent); font-weight: 700; }
-  td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
-  td[contenteditable="true"]:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--accent-soft); }
-  .review-row td { background: #fff4e6; }
-  .count-pill { font-size: 11px; color: #4a5578; margin-bottom: 10px; font-weight: 600; }
-  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-  .empty-hint { font-size: 12px; color: #7a859e; padding: 24px 4px; }
-  footer { max-width: 1100px; margin: 32px auto 0; font-size: 11px; color: #7a859e; border-top: 1px solid var(--line); padding-top: 14px; }
-  .table-scroll { overflow-x: auto; border-radius: 6px; }
-  #logBox { display: none; margin-top: 8px; font-size: 11px; color: #4a5578; background: #f0f4ff; padding: 8px; border-radius: 6px; max-height: 300px; overflow-y: auto; }
   .thumb-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .thumb-item { position: relative; width: 60px; height: 60px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); }
   .thumb-item img { width: 100%; height: 100%; object-fit: cover; }
   .thumb-item button { position: absolute; top: 0; right: 0; padding: 0; width: 18px; height: 18px; font-size: 10px; line-height: 1; background: rgba(0,0,0,0.7); border-radius: 0 0 0 4px; }
+  .doc-info { background: #f0f4ff; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #4a5578; margin-bottom: 10px; display: none; }
+  .doc-info strong { color: var(--accent); }
+  textarea { width: 100%; min-height: 180px; resize: vertical; font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: #fbfbfe; color: var(--ink); }
+  textarea:focus, input[type=text]:focus { outline: 2px solid var(--accent); background: #fff; }
+  input[type=text] { width: 100%; font-family: var(--mono); font-size: 13px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fbfbfe; color: var(--ink); }
+  .row { margin-bottom: 14px; }
+  .actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .list-actions { margin-top: 8px; margin-bottom: 14px; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .list-actions-title { font-family: var(--mono); font-size: 11px; color: #4a5578; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }
+  button { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 16px; border-radius: 6px; border: 1px solid var(--ink); background: var(--ink); color: #fff; cursor: pointer; font-weight: 600; transition: background 0.2s, opacity 0.2s; }
+  button.secondary { background: #fff; color: var(--ink); }
+  button.utility { font-size: 10px; padding: 6px 12px; background: #fff; color: var(--accent); border-color: var(--accent); }
+  button:hover { opacity: 0.85; background: #001250; color: #fff; }
+  button.secondary:hover, button.utility:hover { background: var(--accent-soft); color: var(--ink); }
+  button:disabled { opacity: 0.3; cursor: not-allowed; background: var(--line); border-color: var(--line); color: #7a859e; }
+  .status { font-family: var(--mono); font-size: 12px; margin-top: 10px; min-height: 16px; font-weight: 500; }
+  .status.ok { color: var(--ok); }
+  .status.warn { color: var(--warn); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+  th { text-align: left; font-family: var(--mono); font-size: 11px; text-transform: uppercase; background: var(--accent-soft); color: var(--accent); padding: 10px; border-bottom: 2px solid var(--accent); font-weight: 700; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td[contenteditable="true"]:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--accent-soft); }
+  .review-row td { background: var(--warn-soft); }
+  .missing-row td { background: #fde8e8; color: #9c1c1c; }
+  .count-pill { font-family: var(--mono); font-size: 11px; color: #4a5578; margin-bottom: 10px; font-weight: 600; }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .top-actions { margin-top: 0; }
+  .empty-hint { font-family: var(--mono); font-size: 12px; color: #7a859e; padding: 24px 4px; line-height: 1.5; }
+  footer { max-width: 1100px; margin: 32px auto 0; font-family: var(--mono); font-size: 11px; color: #7a859e; border-top: 1px solid var(--line); padding-top: 14px; line-height: 1.6; }
+  .table-scroll { overflow-x: auto; border-radius: 6px; }
+  .btn-ia { background: linear-gradient(135deg, #001a70, #0033a0); }
+  .btn-ia:hover { background: linear-gradient(135deg, #001250, #002080); }
+  #logBox { display: none; margin-top: 8px; font-size: 11px; color: #4a5578; background: #f0f4ff; padding: 8px; border-radius: 6px; max-height: 200px; overflow-y: auto; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Generador de listas de estudiantes</h1>
-    <span class="tag">IA + OCR</span>
+    <span class="tag">IA + OCR + Comparador</span>
   </header>
 
   <div class="grid">
+    <!-- ============ PANEL IZQUIERDO ============ -->
     <div class="panel">
       <div class="row">
-        <label class="field-label">1. EXTRAER DESDE IMAGEN, PDF, EXCEL O CSV</label>
+        <label class="field-label">1. Extraer desde Captura, PDF, Excel o CSV</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
-          <p>📷 Sube imagen(es), PDF, Excel o CSV</p>
-          <small>Para imágenes: puedes seleccionar varias si la lista tiene más de 1 página</small>
+          <p>📷 Haz clic para subir (Imagen, PDF, Excel, CSV) o <strong>CTRL + V</strong> para pegar</p>
+          <small>Imágenes: puedes seleccionar varias si la lista tiene más de 1 página</small>
           <input type="file" id="fileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
         </div>
 
         <div id="thumbList" class="thumb-list"></div>
         <div id="docInfo" class="doc-info"></div>
 
-        <div id="scannerBox" class="scanner-container">
-          <div id="scannerPreview" class="scanner-preview-wrapper"></div>
+        <!-- Botones de OCR -->
+        <div class="actions" style="margin-top: 8px;">
+          <button id="btnProcessIA" class="btn-ia" style="flex: 1; min-width: 180px;" disabled>
+            ✨ PROCESAR CON IA (Gemini)
+          </button>
+          <button id="btnProcessLocal" class="secondary" style="flex: 1; min-width: 180px;" disabled>
+            ⚡ PROCESAR CON OCR LOCAL
+          </button>
         </div>
 
-        <button id="btnProcessImages" class="secondary" style="width: 100%; margin-top: 4px;" disabled>
-          PROCESAR IMÁGENES CON IA
+        <button id="btnTransferOcr" class="secondary" style="width: 100%; margin-top: 10px;" disabled>
+          PASAR DATOS A LA TABLA
         </button>
-        <button id="btnTransferOcr" class="secondary" style="width: 100%; margin-top: 4px;" disabled>PASAR DATOS A LA TABLA</button>
-        <button id="btnExtractNomina" class="secondary" style="width: 100%; margin-top: 8px;" disabled>EXTRAER NIE + NOMBRE</button>
         <div id="logBox"></div>
       </div>
+
       <div class="row">
-        <label class="field-label" for="raw">2. PEGA DATOS DE EXCEL O TEXTO</label>
-        <textarea id="raw" placeholder="Pega celdas desde Excel o texto..."></textarea>
+        <label class="field-label" for="raw">2. Pega aquí los datos de Excel o texto plano</label>
+        <textarea id="raw" placeholder="Pega celdas directamente desde Excel o texto plano:&#10;19718319 RODAS SANTOS STEVEN ALBERTO&#10;19889577 ALVARADO RAMÍREZ, KATLEEN LILIANA&#10;RODAS SANTOS STEVEN ALBERTO 19718319@clases.edu.sv"></textarea>
       </div>
+
       <div class="row">
-        <label class="field-label" for="domain">DOMINIO</label>
+        <label class="field-label" for="domain">DOMINIO PREDETERMINADO (SI NO VIENE EN EL TEXTO)</label>
         <input type="text" id="domain" value="@clases.edu.sv">
       </div>
+
       <div class="actions">
         <button id="btnParse">GENERAR TABLA</button>
         <button id="btnClear" class="secondary">LIMPIAR</button>
       </div>
+
       <div id="status" class="status"></div>
+
+      <div class="separator"></div>
+
+      <!-- ============ COMPARADOR MASIVO ============ -->
+      <div class="row">
+        <label class="field-label" style="font-size: 12px; margin-bottom: 4px;">3. Comparador Masivo: Detectar Estudiantes Faltantes</label>
+        <p style="font-size: 11px; color: #4a5578; margin-top: 0; line-height: 1.4;">Sube uno o varios archivos Excel/CSV para cruzarlos contra la lista principal generada arriba. El sistema te dirá exactamente qué alumnos no aparecen en esos documentos.</p>
+
+        <div class="file-dropzone" onclick="document.getElementById('compareFileInput').click()">
+          <p>📁 Haz clic para subir <strong>MÚLTIPLES ARCHIVOS</strong> (Excel, CSV)</p>
+          <input type="file" id="compareFileInput" accept=".csv, .xlsx, .xls" multiple>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-bottom: 12px;">
+        <button id="btnCompareParse">GENERAR TABLA COMPARATIVA</button>
+        <button id="btnCompareClear" class="secondary">LIMPIAR COMPARADOR</button>
+      </div>
+
+      <div id="compareStatus" class="status"></div>
     </div>
 
+    <!-- ============ PANEL DERECHO ============ -->
     <div class="panel">
       <div class="panel-head">
         <div id="countPill" class="count-pill"></div>
-        <div class="actions" style="margin-top:0;">
-          <button id="btnCopy" class="secondary" disabled>COPIAR</button>
+        <div class="actions top-actions">
+          <button id="btnCopy" class="secondary" disabled>COPIAR TABLA</button>
           <button id="btnCsv" class="secondary" disabled>CSV</button>
         </div>
       </div>
+
       <div class="actions list-actions">
-        <div class="list-actions-title">COPIAR:</div>
-        <button id="btnCopyEmails" class="utility" disabled>CORREOS</button>
-        <button id="btnCopyNames" class="utility" disabled>NOMBRES</button>
-        <button id="btnCopyLastNames" class="utility" disabled>APELLIDOS</button>
+        <div class="list-actions-title">COPIAR LISTAS ESPECÍFICAS:</div>
+        <button id="btnCopyEmails" class="utility" disabled>SOLO CORREOS (,)</button>
+        <button id="btnCopyNames" class="utility" disabled>SOLO NOMBRES</button>
+        <button id="btnCopyLastNames" class="utility" disabled>SOLO APELLIDOS</button>
       </div>
+
       <div class="table-scroll">
-        <table>
+        <table id="outTable">
           <thead><tr><th>CORREO</th><th>APELLIDO</th><th>NOMBRE</th></tr></thead>
-          <tbody id="outBody"><tr><td colspan="3" class="empty-hint">La tabla aparecerá aquí.</td></tr></tbody>
+          <tbody id="outBody">
+            <tr><td colspan="3" class="empty-hint">La tabla aparecerá aquí después de procesar los datos.</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
-    <div id="nominaResults" class="panel panel-full" style="display: none;">
+    <!-- ============ TABLA COMPARATIVA ============ -->
+    <div id="compareResults" class="panel panel-full" style="display: none;">
       <div class="panel-head">
-        <div><div class="count-pill" id="nominaCountPill"></div></div>
-        <div class="actions">
-          <button id="btnCopyNomina" class="secondary">COPIAR</button>
-          <button id="btnNominaCsv" class="secondary">CSV</button>
+        <div id="compareCountPill" class="count-pill"></div>
+        <div class="actions top-actions">
+          <button id="btnCopyCompareTable" class="secondary">COPIAR TABLA</button>
+          <button id="btnCompareCsv" class="secondary">CSV</button>
         </div>
       </div>
+
+      <div class="actions list-actions">
+        <div class="list-actions-title">COPIAR FALTANTES ESPECÍFICOS:</div>
+        <button id="btnCopyCompareEmails" class="utility">SOLO CORREOS (,)</button>
+        <button id="btnCopyCompareNames" class="utility">SOLO NOMBRES</button>
+        <button id="btnCopyCompareLastNames" class="utility">SOLO APELLIDOS</button>
+        <button id="btnCopyMissing" class="utility" style="border-color: var(--warn); color: var(--warn);">COPIAR ALUMNOS FALTANTES</button>
+      </div>
+
       <div class="table-scroll">
         <table>
-          <thead><tr><th>NIE</th><th>NOMBRE</th></tr></thead>
-          <tbody id="nominaBody"></tbody>
+          <thead><tr><th>CORREO</th><th>ESTUDIANTE (LISTA MAESTRA)</th><th>ESTADO</th></tr></thead>
+          <tbody id="compareBody"></tbody>
         </table>
       </div>
+
+      <div id="compareActionStatus" class="status"></div>
     </div>
   </div>
-  <footer>Doble clic para editar celdas.</footer>
+
+  <footer>
+    Nombres y Apellidos se transforman automáticamente a MAYÚSCULAS. Las filas en naranja necesitan revisión manual. Doble clic en cualquier celda para corregir valores antes de copiar.
+  </footer>
 </div>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ============ URL DEL BACKEND EN RENDER ============
+// ==================== CONFIGURACIÓN ====================
 const API_URL = "https://pagina-con-ocr-generador-lista.onrender.com/api/scan";
+const CONNECTORS = new Set(["Y","DE","DEL","LA","LAS","LOS","SAN","SANTA","VDA"]);
 
+// ==================== ESTADO GLOBAL ====================
 let rawOcrBuffer = '';
 let currentParsedStudents = [];
-let currentNominaStudents = [];
 let currentImageNominaRows = [];
-let selectedImages = [];
-const CONNECTORS = new Set(["DE", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA", "VDA", "Y"]);
+let selectedImages = [];         // Imágenes pendientes de procesar
+let selectedDoc = null;           // PDF/Excel/CSV pendiente
+let foundNiesSet = new Set();
+let lastComparisonResults = [];
 
+// ==================== UTILIDADES ====================
 function log(msg) {
   const logBox = document.getElementById('logBox');
   logBox.style.display = 'block';
@@ -171,79 +232,13 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-function isValidNie(nie) {
-  if (!/^\d{7,8}$/.test(nie)) return false;
-  if (/^(\d)\1{6,7}$/.test(nie)) return false;
-  return true;
+function setStatus(el, msg, type) {
+  const target = typeof el === 'string' ? document.getElementById(el) : el;
+  target.textContent = msg;
+  target.className = 'status' + (type ? ' ' + type : '');
 }
 
-function isValidStudentName(name) {
-  if (name.length < 3) return false;
-  if (/\d/.test(name)) return false;
-  if (!/^[A-ZÁÉÍÓÚÜÑ\s,]+$/i.test(name)) return false;
-  return true;
-}
-
-const normalizeDigits = str => str
-  .replace(/O/g,'0').replace(/o/g,'0').replace(/D/g,'0').replace(/d/g,'0').replace(/Q/g,'0').replace(/q/g,'0')
-  .replace(/I/g,'1').replace(/i/g,'1').replace(/L/g,'1').replace(/l/g,'1').replace(/\|/g,'1').replace(/!/g,'1')
-  .replace(/Z/g,'2').replace(/z/g,'2').replace(/E/g,'3').replace(/e/g,'3').replace(/A/g,'4').replace(/a/g,'4')
-  .replace(/S/g,'5').replace(/s/g,'5').replace(/G/g,'6').replace(/g/g,'6').replace(/T/g,'7').replace(/t/g,'7')
-  .replace(/B/g,'8').replace(/b/g,'8');
-
-function extractNieFromText(str) {
-  const source = String(str || '');
-  const tagged = source.match(/(?:NIE|N\.?\s*I\.?\s*E\.?|ID|CARNET)\s*[:#.\-]?\s*([0-9OoDdQqILil|!ZzEeAaSsGgTtBb]{7,8})/i);
-  if (tagged) {
-    const converted = normalizeDigits(tagged[1]);
-    if (isValidNie(converted)) return { nie: converted, rawMatch: tagged[0] };
-  }
-  const emailMatch = source.match(/\b([0-9OoDdQqILil|!ZzEeAaSsGgTtBb]{7,8})@/);
-  if (emailMatch) {
-    const converted = normalizeDigits(emailMatch[1]);
-    if (isValidNie(converted)) return { nie: converted, rawMatch: emailMatch[0] };
-  }
-  const candidates = source.match(/\b[0-9OoDdQqILil|!ZzEeAaSsGgTtBb]{7,8}\b/g) || [];
-  for (const candidate of candidates) {
-    const converted = normalizeDigits(candidate);
-    if (isValidNie(converted)) return { nie: converted, rawMatch: candidate };
-  }
-  return { nie: '', rawMatch: '' };
-}
-
-function cleanName(text) {
-  return String(text || '')
-    .replace(/Μ/g, 'M')
-    .replace(/\b(Matriculado|Matriculada|Validada|Validado|Observación|Observaciones|Estado|SÍ|SI)\b/gi, ' ')
-    .replace(/\bNo\.\b/gi, ' ')
-    .replace(/\b[0-9]{1,2}\s*\|/g, ' ')
-    .replace(/\b[0-9OoDdQqILil|!ZzEeAaSsGgTtBb]{7,8}\b/g, ' ')
-    .replace(/[\[\]{}|\\=_+~*!#$%^&`<>]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toUpperCase();
-}
-
-function extractStudentsFromText(fullText) {
-  const lines = fullText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const students = [];
-  const seen = new Set();
-  for (const line of lines) {
-    if (/Sede Educativa|Dirección|Teléfono|Servicio Educativo|Plan de Estudio|Sección|Año lectivo|MINISTERIO|GERENCIA|DEPARTAMENTO|MATRÍCULA|Director/i.test(line)) continue;
-    const nieInfo = extractNieFromText(line);
-    if (!nieInfo.nie || !isValidNie(nieInfo.nie)) continue;
-    if (seen.has(nieInfo.nie)) continue;
-    let name = line.replace(nieInfo.rawMatch, ' ');
-    name = cleanName(name);
-    if (!isValidStudentName(name)) continue;
-    seen.add(nieInfo.nie);
-    students.push({ nie: nieInfo.nie, nombre: name });
-  }
-  return students;
-}
-
-// ============ MANEJO DE ARCHIVOS ============
-
+// ==================== MANEJO DE ARCHIVOS ====================
 document.getElementById('fileInput').addEventListener('change', e => {
   handleFiles([...e.target.files]);
   e.target.value = '';
@@ -254,34 +249,27 @@ document.addEventListener('paste', e => {
   if (items.length) handleFiles(items.map(i => i.getAsFile()));
 });
 
-async function handleFiles(files) {
+function handleFiles(files) {
   if (!files.length) return;
-  const status = document.getElementById('status');
-
-  // Clasificar: imágenes vs documentos
   const images = files.filter(f => f.type.startsWith('image/'));
   const docs = files.filter(f => !f.type.startsWith('image/'));
 
-  // Si hay documentos (PDF/Excel/CSV), procesar el primero
+  // Si hay documentos (PDF/Excel/CSV), guardar el primero para procesar
   if (docs.length > 0) {
-    await processDocument(docs[0]);
-    // Si además hay imágenes, las agregamos también
-    if (images.length > 0) {
-      images.forEach(f => selectedImages.push(f));
-      renderThumbs();
-      actualizarBotonProcesar();
-    }
+    selectedDoc = docs[0];
+    document.getElementById('docInfo').style.display = 'block';
+    document.getElementById('docInfo').innerHTML = `📄 <strong>${docs[0].name}</strong> listo para procesar`;
+    document.getElementById('btnProcessIA').disabled = false;
+    document.getElementById('btnProcessLocal').disabled = false;
     return;
   }
 
-  // Solo imágenes: agregar a la lista de seleccionadas
+  // Solo imágenes
   images.forEach(f => selectedImages.push(f));
   renderThumbs();
-  actualizarBotonProcesar();
-
+  updateActionButtons();
   if (selectedImages.length > 0) {
-    status.textContent = `${selectedImages.length} imagen(es) lista(s). Presiona "PROCESAR IMÁGENES CON IA".`;
-    status.className = 'status ok';
+    setStatus('status', `${selectedImages.length} imagen(es) lista(s). Elige IA o OCR Local.`, 'ok');
   }
 }
 
@@ -289,7 +277,7 @@ function renderThumbs() {
   const box = document.getElementById('thumbList');
   box.innerHTML = selectedImages.map((f, i) => {
     const url = URL.createObjectURL(f);
-    return `<div class="thumb-item" data-idx="${i}">
+    return `<div class="thumb-item">
       <img src="${url}" alt="img${i+1}">
       <button title="Quitar" onclick="quitarImagen(${i})">×</button>
     </div>`;
@@ -299,250 +287,789 @@ function renderThumbs() {
 function quitarImagen(idx) {
   selectedImages.splice(idx, 1);
   renderThumbs();
-  actualizarBotonProcesar();
-  if (selectedImages.length === 0) document.getElementById('status').textContent = '';
+  updateActionButtons();
 }
 
-function actualizarBotonProcesar() {
-  document.getElementById('btnProcessImages').disabled = selectedImages.length === 0;
+function updateActionButtons() {
+  const hasStuff = selectedImages.length > 0 || selectedDoc;
+  document.getElementById('btnProcessIA').disabled = !hasStuff;
+  document.getElementById('btnProcessLocal').disabled = !hasStuff;
 }
 
-async function processDocument(file) {
+// ==================== OCR CON IA (GEMINI) ====================
+document.getElementById('btnProcessIA').addEventListener('click', async () => {
+  if (selectedImages.length === 0 && !selectedDoc) return;
+
   const status = document.getElementById('status');
-  const docInfo = document.getElementById('docInfo');
-  status.textContent = 'Procesando documento...';
-  status.className = 'status';
-  document.getElementById('scannerBox').style.display = 'none';
+  setStatus(status, 'Enviando a la IA...', '');
+
+  ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
   try {
-    let ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
-    let totalStudents = 0;
-    let tipo = '';
+    // Si hay imágenes, usar el endpoint multi-imagen
+    if (selectedImages.length > 0) {
+      const formData = new FormData();
+      selectedImages.forEach(f => formData.append('files', f));
 
-    if (['xlsx', 'xls', 'csv'].includes(ext)) {
-      const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-      const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: '' });
-      rawOcrBuffer = rows.map(r => r.join(' ')).join('\n');
-      currentNominaStudents = extractStudentsFromText(rawOcrBuffer);
-      totalStudents = currentNominaStudents.length;
-      tipo = ext.toUpperCase();
+      log(`[IA] Enviando ${selectedImages.length} imagen(es)...`);
 
-    } else if (ext === 'pdf') {
-      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-      let text = '';
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        text += textContent.items.map(item => item.str).join(' ') + '\n';
+      const response = await fetch(API_URL, { method: 'POST', body: formData });
+
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error('503: modelo saturado');
+        }
+        throw new Error(`HTTP ${response.status}`);
       }
-      rawOcrBuffer = text;
-      currentNominaStudents = extractStudentsFromText(rawOcrBuffer);
-      totalStudents = currentNominaStudents.length;
-      tipo = `PDF (${pdf.numPages} pág.)`;
 
-    } else {
-      // Otro tipo: no soportado
-      status.textContent = `⚠️ Tipo de archivo no soportado: .${ext}`;
-      status.className = 'status warn';
-      return;
-    }
+      const data = await response.json();
 
-    if (totalStudents > 0) {
-      status.textContent = `✅ ${totalStudents} estudiante(s) detectados en ${tipo}. Presiona "PASAR DATOS A LA TABLA".`;
-      status.className = 'status ok';
-      docInfo.style.display = 'block';
-      docInfo.innerHTML = `📄 <strong>${file.name}</strong> — ${totalStudents} estudiante(s)`;
-      document.getElementById('btnTransferOcr').disabled = false;
-      document.getElementById('btnExtractNomina').disabled = false;
-    } else {
-      status.textContent = `⚠️ El archivo ${tipo} se procesó pero no se detectaron estudiantes.`;
-      status.className = 'status warn';
-      docInfo.style.display = 'block';
-      docInfo.innerHTML = `📄 <strong>${file.name}</strong> — 0 estudiantes detectados`;
-    }
-
-  } catch (err) {
-    console.error('Error:', err);
-    status.textContent = `❌ Error procesando ${file.name}: ${err.message || err.name}`;
-    status.className = 'status warn';
-  }
-}
-
-// ============ PROCESAMIENTO CON IA ============
-
-document.getElementById('btnProcessImages').addEventListener('click', async () => {
-  if (selectedImages.length === 0) return;
-  const status = document.getElementById('status');
-  status.textContent = `Enviando ${selectedImages.length} imagen(es) a la IA...`;
-  status.className = 'status';
-
-  const preview = document.getElementById('scannerPreview');
-  preview.innerHTML = selectedImages.map(f => `<img src="${URL.createObjectURL(f)}" alt="">`).join('');
-  document.getElementById('scannerBox').style.display = 'block';
-
-  ['btnTransferOcr', 'btnExtractNomina', 'btnProcessImages'].forEach(id => document.getElementById(id).disabled = true);
-
-  try {
-    const formData = new FormData();
-    selectedImages.forEach(f => formData.append('files', f));
-
-    const response = await fetch(API_URL, { method: 'POST', body: formData });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Backend error:', response.status, errText);
-      if (response.status === 503) {
-        status.textContent = '⏳ El modelo está saturado. Intenta de nuevo en unos segundos.';
+      if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
+        currentImageNominaRows = data.students;
+        setStatus(status, `✅ ${data.total} estudiante(s) detectados con IA.`, 'ok');
+        log(`[IA] ${data.total} estudiantes detectados.`);
+        document.getElementById('btnTransferOcr').disabled = false;
       } else {
-        status.textContent = `❌ Error del servidor (${response.status}). Revisa la consola.`;
+        setStatus(status, '❌ La IA no detectó estudiantes válidos.', 'warn');
+        document.getElementById('btnProcessIA').disabled = false;
+        document.getElementById('btnProcessLocal').disabled = false;
       }
-      status.className = 'status warn';
-      document.getElementById('btnProcessImages').disabled = false;
-      return;
-    }
-
-    const data = await response.json();
-
-    if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
-      currentImageNominaRows = data.students;
-      status.textContent = `✅ ${data.total} estudiante(s) detectados con IA (${selectedImages.length} imagen/es).`;
-      status.className = 'status ok';
-      document.getElementById('btnTransferOcr').disabled = false;
-      document.getElementById('btnExtractNomina').disabled = false;
     } else {
-      status.textContent = '❌ No se detectaron datos válidos en las imágenes.';
-      status.className = 'status warn';
-      document.getElementById('btnProcessImages').disabled = false;
+      // Documento (PDF/Excel/CSV): usar OCR local directamente
+      setStatus(status, 'Los documentos usan OCR local. Procesando...', '');
+      await processDocumentLocal(selectedDoc);
     }
+
   } catch (err) {
-    console.error('Error detallado:', err);
-    status.textContent = `❌ Error: ${err.message || err.name || 'desconocido'}`;
-    status.className = 'status warn';
-    document.getElementById('btnProcessImages').disabled = false;
+    console.error(err);
+    log(`[IA] Error: ${err.message}. Cayendo a OCR local...`);
+    setStatus(status, '⚠️ IA no disponible. Usando OCR local como respaldo...', 'warn');
+
+    // Auto-fallback a OCR local
+    if (selectedImages.length > 0) {
+      await processImagesLocal();
+    } else if (selectedDoc) {
+      await processDocumentLocal(selectedDoc);
+    }
   }
 });
 
-// ============ RESTO DEL FLUJO ============
+// ==================== OCR LOCAL (TESSERACT + PDF/EXCEL) ====================
+document.getElementById('btnProcessLocal').addEventListener('click', async () => {
+  if (selectedImages.length === 0 && !selectedDoc) return;
+  ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
+  try {
+    if (selectedImages.length > 0) {
+      await processImagesLocal();
+    } else if (selectedDoc) {
+      await processDocumentLocal(selectedDoc);
+    }
+  } catch (err) {
+    console.error(err);
+    setStatus('status', '❌ Error en OCR local.', 'warn');
+    document.getElementById('btnProcessLocal').disabled = false;
+  }
+});
+
+async function processImagesLocal() {
+  const status = document.getElementById('status');
+  setStatus(status, `Procesando ${selectedImages.length} imagen(es) con OCR local...`, '');
+
+  let allText = '';
+
+  for (let i = 0; i < selectedImages.length; i++) {
+    setStatus(status, `Procesando imagen ${i+1} de ${selectedImages.length}...`, '');
+    const canvas = await loadImageToCanvas(selectedImages[i]);
+    preprocessCanvas(canvas);
+    const text = await runOcrOnCanvas(canvas);
+    allText += text + '\n';
+    log(`[Local] Imagen ${i+1}/${selectedImages.length} procesada.`);
+  }
+
+  rawOcrBuffer = cleanOCRNoise(allText);
+
+  if (rawOcrBuffer.trim()) {
+    setStatus(status, '✅ OCR local completado. Presiona "PASAR DATOS A LA TABLA".', 'ok');
+    document.getElementById('btnTransferOcr').disabled = false;
+  } else {
+    setStatus(status, '⚠️ No se extrajo texto válido.', 'warn');
+    document.getElementById('btnProcessIA').disabled = false;
+    document.getElementById('btnProcessLocal').disabled = false;
+  }
+}
+
+async function processDocumentLocal(file) {
+  const status = document.getElementById('status');
+  setStatus(status, 'Procesando documento...', '');
+
+  try {
+    let extractedText = '';
+    const fileExt = file.name ? file.name.split('.').pop().toLowerCase() : '';
+
+    if (['xlsx', 'xls', 'csv'].includes(fileExt)) {
+      extractedText = await extractExcelText(file);
+    } else if (fileExt === 'pdf') {
+      extractedText = await extractPdfText(file);
+    }
+
+    rawOcrBuffer = cleanOCRNoise(extractedText);
+
+    if (rawOcrBuffer.trim()) {
+      setStatus(status, '✅ Documento procesado. Presiona "PASAR DATOS A LA TABLA".', 'ok');
+      document.getElementById('btnTransferOcr').disabled = false;
+      log(`[Local] Documento procesado.`);
+    } else {
+      setStatus(status, '⚠️ No se extrajeron datos válidos del documento.', 'warn');
+      document.getElementById('btnProcessIA').disabled = false;
+      document.getElementById('btnProcessLocal').disabled = false;
+    }
+  } catch (err) {
+    console.error(err);
+    setStatus(status, '❌ Error al procesar el documento.', 'warn');
+    document.getElementById('btnProcessIA').disabled = false;
+    document.getElementById('btnProcessLocal').disabled = false;
+  }
+}
+
+async function extractExcelText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+  const excelLines = [];
+  for (let r of rows) {
+    if (!r || r.length === 0) continue;
+    const rowStr = r.join(' ');
+    let nie = '';
+    const emailMatch = rowStr.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    if (emailMatch) {
+      nie = emailMatch[0].split('@')[0];
+    } else {
+      const nieMatch = rowStr.match(/\b\d{7,8}\b/);
+      if (nieMatch) nie = nieMatch[0];
+    }
+
+    const nameParts = [];
+    for (let cell of r) {
+      const cellStr = String(cell).trim();
+      if (!cellStr) continue;
+      if (/^\d+$/.test(cellStr)) continue;
+      if (/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi.test(cellStr)) continue;
+      if (/^[01]{3,}$/.test(cellStr)) continue;
+      if (/^(SÍ|SI|NO|VALIDADA|ESTADO|IC|1C|CI|C1)$/i.test(cellStr)) continue;
+      nameParts.push(cellStr);
+    }
+
+    const fullName = nameParts.join(' ').trim();
+    if (nie && fullName) {
+      excelLines.push(`${nie} ${fullName}`);
+    } else if (fullName.length > 5 && /[a-zA-Z]/.test(fullName)) {
+      excelLines.push(rowStr);
+    }
+  }
+
+  return excelLines.join('\n');
+}
+
+async function extractPdfText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let text = '';
+
+  // Intento 1: extracción estructurada por coordenadas
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const textContent = await page.getTextContent();
+    if (!textContent.items || textContent.items.length === 0) continue;
+
+    const rowsMap = new Map();
+    for (let item of textContent.items) {
+      const str = item.str.trim();
+      if (!str) continue;
+      const y = Math.round(item.transform[5]);
+      const x = Math.round(item.transform[4]);
+
+      let foundY = null;
+      for (let existingY of rowsMap.keys()) {
+        if (Math.abs(existingY - y) <= 4) { foundY = existingY; break; }
+      }
+      const targetY = foundY !== null ? foundY : y;
+      if (!rowsMap.has(targetY)) rowsMap.set(targetY, []);
+      rowsMap.get(targetY).push({ x, str });
+    }
+
+    const sortedY = Array.from(rowsMap.keys()).sort((a, b) => b - a);
+    for (let y of sortedY) {
+      const rowItems = rowsMap.get(y).sort((a, b) => a.x - b.x);
+      const filtered = rowItems.filter(item => {
+        const txt = item.str.toUpperCase().trim();
+        return !['SÍ','SI','NO','VALIDADA','ESTADO'].includes(txt);
+      });
+      text += filtered.map(item => item.str).join(' ') + '\n';
+    }
+  }
+
+  // Fallback: si el PDF no tenía texto (escaneado), usar OCR en canvas
+  if (!text || text.trim().length < 20) {
+    log('[PDF] PDF sin texto. Aplicando OCR sobre las páginas...');
+    text = '';
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.5 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      await page.render({ canvasContext: context, viewport }).promise;
+      preprocessCanvas(canvas);
+      text += await runOcrOnCanvas(canvas) + '\n';
+    }
+  }
+
+  return text;
+}
+
+// ==================== OCR CON TESSERACT ====================
+function preprocessCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    const val = avg < 140 ? 0 : 255;
+    data[i] = data[i + 1] = data[i + 2] = val;
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function loadImageToCanvas(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let targetW = img.naturalWidth, targetH = img.naturalHeight;
+      const MIN_WIDTH = 2600;
+      if (targetW < MIN_WIDTH) {
+        const scale = MIN_WIDTH / targetW;
+        targetW = Math.round(targetW * scale);
+        targetH = Math.round(targetH * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+      URL.revokeObjectURL(img.src);
+      resolve(canvas);
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function runOcrOnCanvas(canvas) {
+  const worker = await Tesseract.createWorker('spa');
+  await worker.setParameters({
+    tessedit_pageseg_mode: '6',
+    tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÁÉÍÓÚÑáéíóúñ@.,- '
+  });
+  const res = await worker.recognize(canvas);
+  await worker.terminate();
+  return rebuildTextByLayout(res.data.words);
+}
+
+function rebuildTextByLayout(words) {
+  if (!words || words.length === 0) return '';
+  words.sort((a, b) => a.bbox.y0 - b.bbox.y0);
+  const lines = [];
+  let currentLine = [];
+  let currentY = null;
+  const Y_TOLERANCE = 18;
+
+  for (const word of words) {
+    if (!word.text.trim()) continue;
+    if (currentY === null || Math.abs(word.bbox.y0 - currentY) < Y_TOLERANCE) {
+      currentLine.push(word);
+      currentY = currentY === null ? word.bbox.y0 : (currentY + word.bbox.y0) / 2;
+    } else {
+      currentLine.sort((a, b) => a.x0 - b.x0);
+      lines.push(currentLine.map(w => w.text).join(' '));
+      currentLine = [word];
+      currentY = word.bbox.y0;
+    }
+  }
+  if (currentLine.length > 0) {
+    currentLine.sort((a, b) => a.x0 - b.x0);
+    lines.push(currentLine.map(w => w.text).join(' '));
+  }
+  return lines.join('\n');
+}
+
+// ==================== NORMALIZACIÓN Y DICCIONARIO ====================
+function normalizeDigits(str) {
+  return str
+    .replace(/[Oo]/g, '0')
+    .replace(/[ILil|]/g, '1')
+    .replace(/[Zz]/g, '2')
+    .replace(/[Ee]/g, '3')
+    .replace(/[Aa]/g, '4')
+    .replace(/[Ss]/g, '5')
+    .replace(/[Gg]/g, '6')
+    .replace(/[Tt]/g, '7')
+    .replace(/[Bb]/g, '8')
+    .replace(/[qg]/g, '9');
+}
+
+function extractNieFromText(str) {
+  const directMatch = str.match(/\b\d{7,8}\b/);
+  if (directMatch) return { nie: directMatch[0], rawMatch: directMatch[0] };
+
+  const wordMatches = str.match(/\b[0-9OoILil|ZzEeAaSsGgTtBqg]{7,8}\b/g);
+  if (wordMatches) {
+    for (const match of wordMatches) {
+      const converted = normalizeDigits(match);
+      if (/^\d{7,8}$/.test(converted)) {
+        return { nie: converted, rawMatch: match };
+      }
+    }
+  }
+  return { nie: '', rawMatch: '' };
+}
+
+function restoreCommonMissingVowels(str) {
+  const dictionary = [
+    [/\bGONZLEZ\b/gi, "GONZALEZ"],
+    [/\bHERNNDEZ\b/gi, "HERNANDEZ"],
+    [/\bRAMREZ\b/gi, "RAMIREZ"],
+    [/\bLPEZ\b/gi, "LOPEZ"],
+    [/\bCRESPN\b/gi, "CRESPIN"],
+    [/\bSANTAMARA\b/gi, "SANTAMARIA"],
+    [/\bMARTNEZ\b/gi, "MARTINEZ"],
+    [/\bPREZ\b/gi, "PEREZ"],
+    [/\bGARCA\b/gi, "GARCIA"],
+    [/\bVSQUEZ\b/gi, "VASQUEZ"],
+    [/\bSNCHEZ\b/gi, "SANCHEZ"],
+    [/\bVCTOR\b/gi, "VICTOR"],
+    [/\bNOEM\b/gi, "NOEMI"],
+    [/\bJOS\b/gi, "JOSE"],
+    [/\bMARA\b/gi, "MARIA"],
+    [/\bANDRS\b/gi, "ANDRES"],
+    [/\bCASTAEDA\b/gi, "CASTAÑEDA"],
+    [/\bMUOZ\b/gi, "MUÑOZ"],
+    [/\bPEA\b/gi, "PEÑA"]
+  ];
+  let result = str;
+  for (const [pattern, replacement] of dictionary) {
+    result = result.replace(pattern, replacement);
+  }
+  return result;
+}
+
+function cleanOCRNoise(str) {
+  let cleanText = str
+    .replace(/MINISTERIO DE EDUCACIÓN.*?\n/gi, '\n')
+    .replace(/GERENCIA DE GESTIÓN.*?\n/gi, '\n')
+    .replace(/DEPARTAMENTO DE REGISTRO.*?\n/gi, '\n')
+    .replace(/MATRÍCULA OFICIAL DE ESTUDIANTES.*?\n/gi, '\n')
+    .replace(/No\.\s*NIE\s*Nombre del estudiante.*?\n/gi, '\n')
+    .replace(/Sede Educativa|Servicio Educativo|Plan de Estudio|Sección|Año lectivo|Dirección|Teléfono/gi, ' ')
+    .replace(/Director\(a\) del Centro Educativo/gi, ' ');
+
+  cleanText = cleanText.replace(/(\b\d{7,8}\b)/g, '\n$1');
+
+  return cleanText.split(/\r?\n/)
+    .map(line => {
+      let cleaned = line
+        .replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi, ' ')
+        .replace(/\b\d+[\.,]\d+\b/g, ' ')
+        .replace(/\s\d+(\.\d+)?(?=\s|$)/g, ' ')
+        .replace(/[\[\]{}|\\=_+~*!#$%^&`<>]/g, ' ')
+        .replace(/\b(si|sí|no|estado|validada|observación|matriculado|no\.|nie|nombre del estudiante)\b/gi, ' ')
+        .replace(/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi, ' ')
+        .replace(/^\s*\d{1,3}\s+(?=\d{7,8}\b)/i, '')
+        .replace(/\b(IC|1C|CI|C1)\b/gi, ' ')
+        .replace(/\b[01]{3,}\b/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return restoreCommonMissingVowels(cleaned);
+    })
+    .filter(line => {
+      const { nie } = extractNieFromText(line);
+      return nie.length >= 7 && line.replace(nie, '').trim().length > 3;
+    })
+    .join('\n');
+}
+
+// ==================== TRANSFERIR A LA TABLA ====================
+document.getElementById('btnTransferOcr').addEventListener('click', () => {
+  const rawInput = document.getElementById('raw');
+  const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
+
+  // Si vino de IA (JSON estructurado), convertir a texto
+  if (currentImageNominaRows.length > 0) {
+    const textLines = currentImageNominaRows.map(r => `${r.nie} ${r.nombre}`).join('\n');
+    rawInput.value = textLines;
+    rawOcrBuffer = textLines;
+    currentImageNominaRows = [];
+  } else {
+    rawInput.value = rawOcrBuffer;
+  }
+
+  const rows = parseText(rawInput.value, domain);
+  render(rows, domain);
+
+  const status = document.getElementById('status');
+  if (rows.length === 0) {
+    setStatus(status, 'Datos transferidos, pero no se detectaron estudiantes válidos.', 'warn');
+  } else {
+    setStatus(status, `¡Datos transferidos! Se generó la tabla con ${rows.length} estudiantes.`, 'ok');
+  }
+});
+
+// ==================== PARSER Y SPLIT NAME ====================
 function splitName(fullName) {
-  let cleanStr = fullName.replace(/@[\w.-]+/gi, '').replace(/\s+/g, ' ').trim();
+  let cleanStr = fullName.replace(/\b\d+\b/g, '')
+    .replace(/\b(SÍ|SI|NO|IC|1C|CI|C1)\b/gi, '')
+    .replace(/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD|INTELECTUAL|MOTOR|VISUAL|AUDITIVA|AUTISMO|SÍNDROME|DOWN)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
   if (cleanStr.includes(',')) {
     const parts = cleanStr.split(',');
-    return { apellido: parts[0].trim().toUpperCase(), nombre: parts.slice(1).join(' ').trim().toUpperCase(), review: false };
+    const apellidos = parts[0].trim();
+    const nombres = parts.slice(1).join(' ').trim();
+    return { nombre: nombres, apellido: apellidos, review: !nombres || !apellidos };
   }
-  let tokens = cleanStr.split(/\s+/).filter(t => t.length > 0);
-  if (!tokens.length) return { nombre: '', apellido: '', review: true };
-  if (tokens.length === 1) return { nombre: '', apellido: tokens[0].toUpperCase(), review: true };
-  if (tokens.length === 2) return { apellido: tokens[0].toUpperCase(), nombre: tokens[1].toUpperCase(), review: false };
-  if (tokens.length === 3) return { apellido: tokens[0].toUpperCase(), nombre: tokens.slice(1).join(' ').toUpperCase(), review: false };
-  let mid = 2;
-  if (CONNECTORS.has(tokens[1].toUpperCase())) mid = 3;
-  return { apellido: tokens.slice(0, mid).join(' ').toUpperCase(), nombre: tokens.slice(mid).join(' ').toUpperCase(), review: false };
+
+  const tokens = cleanStr.split(/\s+/).filter(t => t.length > 1 || CONNECTORS.has(t.toUpperCase()));
+
+  if (tokens.length === 0) return { nombre: '', apellido: '', review: true };
+  if (tokens.length <= 2) {
+    return { nombre: tokens.slice(0, 1).join(' '), apellido: tokens.slice(1).join(' '), review: tokens.length < 2 };
+  }
+
+  const numApellidos = 2;
+  const apellidoTokens = tokens.slice(-numApellidos);
+  const nombreTokens = tokens.slice(0, -numApellidos);
+
+  return {
+    nombre: nombreTokens.join(' '),
+    apellido: apellidoTokens.join(' '),
+    review: nombreTokens.length === 0 || apellidoTokens.length === 0
+  };
 }
 
-document.getElementById('btnExtractNomina').addEventListener('click', () => {
-  const rows = currentImageNominaRows.length > 0 ? currentImageNominaRows : currentNominaStudents;
-  currentNominaStudents = rows;
-  const tbody = document.getElementById('nominaBody');
-  tbody.innerHTML = rows.length
-    ? rows.map(r => `<tr><td contenteditable="true">${r.nie || ''}</td><td contenteditable="true">${r.nombre || ''}</td></tr>`).join('')
-    : `<tr><td colspan="2" class="empty-hint">Sin datos.</td></tr>`;
-  document.getElementById('nominaCountPill').textContent = `${rows.length} estudiante(s)`;
-  document.getElementById('nominaResults').style.display = 'block';
-});
+function parseText(raw, defaultDomain) {
+  const results = [];
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-document.getElementById('btnTransferOcr').addEventListener('click', () => {
-  const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
-  const sourceRows = currentImageNominaRows.length > 0 ? currentImageNominaRows : currentNominaStudents;
-  const rows = sourceRows.map(r => {
-    const parts = splitName(r.nombre);
-    return { nie: r.nie, apellido: parts.apellido, nombre: parts.nombre, review: parts.review };
-  });
-  const uniqueRows = [];
-  const seen = new Set();
-  for (const row of rows) {
-    if (!row.nie || seen.has(row.nie)) continue;
-    seen.add(row.nie);
-    uniqueRows.push(row);
+  for (const line of lines) {
+    let nie = '';
+    let textName = line;
+
+    const emailMatch = line.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    if (emailMatch) {
+      nie = emailMatch[0].split('@')[0];
+      textName = line.replace(emailMatch[0], '');
+    } else {
+      const extracted = extractNieFromText(line);
+      if (extracted.nie) {
+        nie = extracted.nie;
+        textName = line.replace(extracted.rawMatch, '');
+      }
+    }
+
+    textName = textName.replace(/nie\s*:/i, '')
+      .replace(/[()|;]/g, ' ')
+      .replace(/\b(IC|1C|CI|C1|SÍ|SI|NO)\b/gi, ' ')
+      .replace(/\b(PARÁLISIS|PARALISIS|CEREBRAL|DISCAPACIDAD)\b/gi, ' ')
+      .replace(/\b[01]{3,}\b/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    textName = restoreCommonMissingVowels(textName);
+
+    if (textName.length > 2) {
+      const { nombre, apellido, review } = splitName(textName);
+      if (nombre || apellido) {
+        results.push({
+          nombre: nombre.toUpperCase(),
+          apellido: apellido.toUpperCase(),
+          nie: nie,
+          review: review || !nie
+        });
+      }
+    }
   }
-  currentParsedStudents = uniqueRows;
-  document.getElementById('raw').value = uniqueRows.map(r => `${r.nie} ${r.apellido}, ${r.nombre}`).join('\n');
-  render(uniqueRows, domain);
-  document.getElementById('status').textContent = `${uniqueRows.length} estudiante(s) transferidos.`;
-  document.getElementById('status').className = 'status ok';
-});
+
+  currentParsedStudents = results;
+  return results;
+}
 
 function render(rows, domain) {
-  const body = document.getElementById('outBody'), pill = document.getElementById('countPill');
-  const btns = ['btnCopy', 'btnCsv', 'btnCopyEmails', 'btnCopyNames', 'btnCopyLastNames'].map(id => document.getElementById(id));
-  if (!rows.length) {
-    body.innerHTML = `<tr><td colspan="3" class="empty-hint">La tabla aparecerá aquí.</td></tr>`;
+  const body = document.getElementById('outBody');
+  const pill = document.getElementById('countPill');
+  const buttons = ['btnCopy', 'btnCsv', 'btnCopyEmails', 'btnCopyNames', 'btnCopyLastNames'].map(id => document.getElementById(id));
+
+  if (rows.length === 0) {
+    const rawVal = document.getElementById('raw').value.trim();
+    body.innerHTML = `<tr><td colspan="3" class="empty-hint">${rawVal ? 'No se detectó información válida. Revisa el texto.' : 'La tabla aparecerá aquí después de procesar los datos.'}</td></tr>`;
     pill.textContent = '';
-    btns.forEach(b => b.disabled = true);
+    buttons.forEach(btn => btn.disabled = true);
     return;
   }
-  pill.textContent = `${rows.length} estudiante(s)`;
-  body.innerHTML = rows.map(r => `<tr class="${r.review ? 'review-row' : ''}"><td contenteditable="true">${r.nie ? `${r.nie}${domain}` : ''}</td><td contenteditable="true">${r.apellido}</td><td contenteditable="true">${r.nombre}</td></tr>`).join('');
-  btns.forEach(b => b.disabled = false);
+
+  const reviewCount = rows.filter(r => r.review).length;
+  pill.textContent = `${rows.length} estudiante(s) detectado(s)` + (reviewCount ? ` — ${reviewCount} requieren revisar correo/NIE` : '');
+
+  body.innerHTML = rows.map(r => {
+    const emailValue = r.nie ? (r.nie.includes('@') ? r.nie : `${r.nie}${domain}`) : '';
+    return `<tr class="${r.review ? 'review-row' : ''}">
+      <td contenteditable="true">${emailValue}</td>
+      <td contenteditable="true">${r.apellido}</td>
+      <td contenteditable="true">${r.nombre}</td>
+    </tr>`;
+  }).join('');
+
+  buttons.forEach(btn => btn.disabled = false);
 }
 
+function getTableData() {
+  const rows = [...document.querySelectorAll('#outBody tr')];
+  return rows.map(tr => {
+    const cells = [...tr.querySelectorAll('td')];
+    if (cells.length < 3) return null;
+    return cells.map(td => td.textContent.trim());
+  }).filter(Boolean);
+}
+
+// ==================== BOTONES DE LA TABLA PRINCIPAL ====================
 document.getElementById('btnParse').addEventListener('click', () => {
+  const raw = document.getElementById('raw').value;
   const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
-  const students = extractStudentsFromText(document.getElementById('raw').value);
-  const rows = students.map(s => {
-    const parts = splitName(s.nombre);
-    return { nie: s.nie, apellido: parts.apellido, nombre: parts.nombre, review: parts.review };
-  });
-  currentParsedStudents = rows;
+  const status = document.getElementById('status');
+
+  if (!raw.trim()) {
+    setStatus(status, 'Ingresa o pasa los datos primero.', 'warn');
+    return;
+  }
+
+  const rows = parseText(raw, domain);
   render(rows, domain);
+
+  if (rows.length === 0) {
+    setStatus(status, 'No se encontraron alumnos. Revisa el texto.', 'warn');
+  } else {
+    setStatus(status, `¡Listo! ${rows.length} estudiantes procesados con éxito.`, 'ok');
+  }
 });
 
 document.getElementById('btnClear').addEventListener('click', () => {
   document.getElementById('raw').value = '';
+  document.getElementById('status').textContent = '';
+  document.getElementById('btnTransferOcr').disabled = true;
   rawOcrBuffer = '';
   currentParsedStudents = [];
-  currentNominaStudents = [];
   currentImageNominaRows = [];
   selectedImages = [];
+  selectedDoc = null;
   document.getElementById('thumbList').innerHTML = '';
-  document.getElementById('scannerPreview').innerHTML = '';
-  document.getElementById('scannerBox').style.display = 'none';
   document.getElementById('docInfo').style.display = 'none';
-  document.getElementById('logBox').style.display = 'none';
   document.getElementById('logBox').innerHTML = '';
-  document.getElementById('status').textContent = '';
-  ['btnTransferOcr','btnExtractNomina','btnProcessImages'].forEach(id => document.getElementById(id).disabled = true);
-  document.getElementById('nominaResults').style.display = 'none';
+  document.getElementById('logBox').style.display = 'none';
+  ['btnProcessIA','btnProcessLocal'].forEach(id => document.getElementById(id).disabled = true);
   render([], '');
+  document.getElementById('compareResults').style.display = 'none';
+  document.getElementById('compareStatus').textContent = '';
+  document.getElementById('compareActionStatus').textContent = '';
 });
 
-const setClipboard = (text, msg) => {
+function setClipboard(text, successMsg, statusElement) {
+  const targetElement = statusElement || document.getElementById('status');
   navigator.clipboard.writeText(text).then(() => {
-    document.getElementById('status').textContent = msg;
-    document.getElementById('status').className = 'status ok';
-  }).catch(() => alert('Error al copiar.'));
-};
+    targetElement.textContent = successMsg;
+    targetElement.className = 'status ok';
+  }).catch(() => alert('Error al copiar al portapapeles.'));
+}
 
-const exportCsv = (filename, headers, rows) => {
-  const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))];
-  const blob = new Blob(['\ufeff' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const a = document.body.appendChild(document.createElement('a'));
-  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
-  document.body.removeChild(a);
-};
+document.getElementById('btnCopy').addEventListener('click', () => {
+  const data = getTableData();
+  const tsv = data.map(r => r.join('\t')).join('\n');
+  setClipboard(tsv, 'Tabla copiada. Lista para pegar en Excel con Ctrl+V.');
+});
 
-const getTableRows = (sel) => [...document.querySelectorAll(`${sel} tr`)].map(tr =>
-  [...tr.querySelectorAll('td')].map(td => td.textContent.trim())
-).filter(r => r.length > 0 && r[0]);
+document.getElementById('btnCopyEmails').addEventListener('click', () => {
+  const data = getTableData();
+  const emails = data.map(r => r[0]).join(', ');
+  setClipboard(emails, 'Correos copiados y separados por comas.');
+});
 
-document.getElementById('btnCopy').addEventListener('click', () => setClipboard(getTableRows('#outBody').map(r => r.join('\t')).join('\n'), 'Tabla copiada.'));
-document.getElementById('btnCopyEmails').addEventListener('click', () => setClipboard(getTableRows('#outBody').map(r => r[0]).join(', '), 'Correos copiados.'));
-document.getElementById('btnCopyNames').addEventListener('click', () => setClipboard(getTableRows('#outBody').map(r => r[2]).join('\n'), 'Nombres copiados.'));
-document.getElementById('btnCopyLastNames').addEventListener('click', () => setClipboard(getTableRows('#outBody').map(r => r[1]).join('\n'), 'Apellidos copiados.'));
-document.getElementById('btnCsv').addEventListener('click', () => exportCsv('lista_estudiantes.csv', ['Correo','Apellido','Nombre'], getTableRows('#outBody')));
+document.getElementById('btnCopyNames').addEventListener('click', () => {
+  const data = getTableData();
+  const names = data.map(r => r[2]).join('\n');
+  setClipboard(names, 'Lista de nombres copiada.');
+});
 
-document.getElementById('btnCopyNomina').addEventListener('click', () => setClipboard(getTableRows('#nominaBody').map(r => r.join('\t')).join('\n'), 'Copiado.'));
-document.getElementById('btnNominaCsv').addEventListener('click', () => exportCsv('nomina.csv', ['NIE','Nombre'], getTableRows('#nominaBody')));
+document.getElementById('btnCopyLastNames').addEventListener('click', () => {
+  const data = getTableData();
+  const lastNames = data.map(r => r[1]).join('\n');
+  setClipboard(lastNames, 'Lista de apellidos copiada.');
+});
+
+document.getElementById('btnCsv').addEventListener('click', () => {
+  const data = getTableData();
+  const csvRows = ['Correo,Apellido,Nombre', ...data.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))];
+  const blob = new Blob(['\ufeff' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.body.appendChild(document.createElement('a'));
+  link.href = url;
+  link.download = 'lista_estudiantes.csv';
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+});
+
+// ==================== COMPARADOR MASIVO ====================
+document.getElementById('compareFileInput').addEventListener('change', async (e) => {
+  const files = e.target.files;
+  const status = document.getElementById('compareStatus');
+
+  if (!files || files.length === 0) return;
+
+  setStatus(status, `Procesando ${files.length} archivo(s)...`, '');
+  foundNiesSet.clear();
+
+  try {
+    for (let file of files) {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+
+      for (let sheetName of workbook.SheetNames) {
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+        for (let r of rows) {
+          const lineText = r.join(' ');
+          const extracted = extractNieFromText(lineText);
+          if (extracted.nie) foundNiesSet.add(extracted.nie);
+        }
+      }
+    }
+
+    setStatus(status, `Análisis completado en ${files.length} archivo(s). Haz clic en GENERAR TABLA COMPARATIVA.`, 'ok');
+  } catch (err) {
+    console.error(err);
+    setStatus(status, 'Ocurrió un error al leer los archivos de comparación.', 'warn');
+  }
+});
+
+document.getElementById('btnCompareParse').addEventListener('click', () => {
+  const status = document.getElementById('compareStatus');
+  const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
+
+  if (!currentParsedStudents || currentParsedStudents.length === 0) {
+    setStatus(status, 'Primero debes generar la lista principal arriba (Sección 1/2).', 'warn');
+    return;
+  }
+
+  lastComparisonResults = currentParsedStudents.map(st => {
+    const found = foundNiesSet.has(st.nie);
+    const email = st.nie ? (st.nie.includes('@') ? st.nie : `${st.nie}${domain}`) : '';
+    return {
+      nie: st.nie,
+      email: email,
+      apellido: st.apellido,
+      nombre: st.nombre,
+      fullName: `${st.apellido} ${st.nombre}`.trim(),
+      found: found
+    };
+  });
+
+  renderComparisonResults(lastComparisonResults);
+});
+
+document.getElementById('btnCompareClear').addEventListener('click', () => {
+  foundNiesSet.clear();
+  lastComparisonResults = [];
+  document.getElementById('compareFileInput').value = '';
+  document.getElementById('compareStatus').textContent = '';
+  document.getElementById('compareActionStatus').textContent = '';
+  document.getElementById('compareResults').style.display = 'none';
+});
+
+function renderComparisonResults(results) {
+  const tbody = document.getElementById('compareBody');
+  const pill = document.getElementById('compareCountPill');
+  const resultsDiv = document.getElementById('compareResults');
+  const missingList = results.filter(r => !r.found);
+
+  pill.textContent = `${missingList.length} estudiante(s) FALTANTE(S) de un total de ${results.length}`;
+
+  tbody.innerHTML = results.map(r => `
+    <tr class="${!r.found ? 'missing-row' : ''}">
+      <td contenteditable="true">${r.email}</td>
+      <td>${r.fullName}</td>
+      <td><strong>${r.found ? 'ENCONTRADO' : '❌ FALTANTE'}</strong></td>
+    </tr>
+  `).join('');
+
+  document.getElementById('compareActionStatus').textContent = '';
+  resultsDiv.style.display = 'block';
+}
+
+const compareActionStatus = document.getElementById('compareActionStatus');
+
+document.getElementById('btnCopyCompareTable').addEventListener('click', () => {
+  const rows = [...document.querySelectorAll('#compareBody tr')];
+  if (rows.length === 0) return;
+  const tsv = rows.map(tr => [...tr.querySelectorAll('td')].map(td => td.textContent.trim()).join('\t')).join('\n');
+  setClipboard(tsv, 'Tabla comparativa copiada.', compareActionStatus);
+});
+
+document.getElementById('btnCompareCsv').addEventListener('click', () => {
+  const rows = [...document.querySelectorAll('#compareBody tr')];
+  if (rows.length === 0) return;
+  const data = rows.map(tr => [...tr.querySelectorAll('td')].map(td => td.textContent.trim()));
+  const csvRows = ['Correo,Estudiante (Lista Maestra),Estado', ...data.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))];
+  const blob = new Blob(['\ufeff' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.body.appendChild(document.createElement('a'));
+  link.href = url;
+  link.download = 'lista_comparativa_estudiantes.csv';
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnCopyCompareEmails').addEventListener('click', () => {
+  const missingList = lastComparisonResults.filter(r => !r.found);
+  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.email).filter(Boolean).join(', '), 'Correos de FALTANTES copiados.', compareActionStatus);
+});
+
+document.getElementById('btnCopyCompareNames').addEventListener('click', () => {
+  const missingList = lastComparisonResults.filter(r => !r.found);
+  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.nombre).filter(Boolean).join('\n'), 'Nombres de FALTANTES copiados.', compareActionStatus);
+});
+
+document.getElementById('btnCopyCompareLastNames').addEventListener('click', () => {
+  const missingList = lastComparisonResults.filter(r => !r.found);
+  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.apellido).filter(Boolean).join('\n'), 'Apellidos de FALTANTES copiados.', compareActionStatus);
+});
+
+document.getElementById('btnCopyMissing').addEventListener('click', () => {
+  const missingList = lastComparisonResults.filter(r => !r.found);
+  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
+  const textToCopy = missingList.map(m => `${m.email}\t${m.fullName}`).join('\n');
+  setClipboard(textToCopy, 'Lista de alumnos faltantes copiada.', compareActionStatus);
+});
 </script>
 </body>
 </html>
