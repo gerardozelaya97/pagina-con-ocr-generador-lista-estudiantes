@@ -160,45 +160,47 @@
 
       <!-- ============ GUÍA DE USO ============ -->
       <div class="help-box">
-        <h3> ¿Cómo usar este sistema?</h3>
+        <h3>👋 ¿Cómo se usa? Es muy fácil</h3>
         <ol class="help-steps">
           <li>
-            <strong>Sube tu archivo</strong> (imagen, PDF, Excel o CSV) en el recuadro azul punteado.
-            Puedes arrastrar varias imágenes a la vez si el listado tiene varias páginas.
-            <em>También puedes pegar con CTRL + V.</em>
+            <strong>Pon tu foto aquí</strong> 👇<br>
+            Toca el cuadro con la línea punteada y elige una foto o un archivo.
+            <em>También puedes copiar una foto (Ctrl+C) y pegarla aquí (Ctrl+V).</em>
           </li>
           <li>
-            <strong>Elige el motor de procesamiento:</strong><br>
-            <span class="help-badge ia">✨ IA</span> Imágenes y PDF (más preciso, ~10-60s)<br>
-            <span class="help-badge local">⚡ LOCAL</span> Cualquier tipo (rápido, funciona sin internet)
+            <strong>Toca uno de los dos botones azules:</strong><br>
+            <span class="help-badge ia">✨ CON IA</span> <em>Lee mejor la letra. Tarda un poquito más.</em><br>
+            <span class="help-badge local">⚡ SIN IA</span> <em>Más rápido. Sirve para Excel y Word.</em>
           </li>
           <li>
-            <strong>Presiona "PASAR DATOS A LA TABLA"</strong> cuando el sistema diga que ya procesó el archivo.
+            <strong>Espera un momento.</strong><br>
+            Cuando termine, aparecerá un mensaje verde diciendo "✅ Listo".
           </li>
           <li>
-            <strong>Revisa y corrige la tabla</strong> de la derecha. Las filas naranjas necesitan
-            revisión manual (doble clic para editar cualquier celda).
+            <strong>Toca el botón "PASAR DATOS A LA TABLA".</strong><br>
+            Los nombres aparecerán en la tabla de la derecha. 👉
           </li>
           <li>
-            <strong>Copia los datos</strong> con los botones azules: correos, nombres, apellidos o la tabla
-            completa para pegar en Excel. También puedes descargar el CSV.
+            <strong>Revisa los nombres.</strong><br>
+            Si algo está mal, haz doble clic sobre el error y escríbelo bien.
+            <em>Las filas de color naranja son las que hay que revisar.</em>
           </li>
           <li>
-            <strong>Opcional — Comparador Masivo:</strong> sube otros listados (Excel/CSV) en la
-            Sección 3 para detectar qué estudiantes de tu lista principal NO aparecen en esos archivos.
+            <strong>Toca los botones azules para copiar.</strong><br>
+            Puedes copiar los correos, los nombres, o la lista completa para llevarla a Excel.
           </li>
         </ol>
         <div class="help-note">
-          <strong> Tip:</strong> Si la IA tarda o falla por saturación de Google, el sistema cambia
-          automáticamente al OCR local para que no te quedes sin resultado.
+          <strong>⭐ Consejo:</strong> Si la opción CON IA se tarda mucho o da error,
+          usa mejor la opción SIN IA. ¡Funciona igual y es más rápida!
         </div>
       </div>
 
       <div class="row">
-        <label class="field-label">1. Extraer desde Captura, PDF, Excel o CSV</label>
+        <label class="field-label">1. Pon aquí tu foto o archivo</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
-          <p>📷 Haz clic para subir o <strong>CTRL + V</strong> para pegar captura</p>
-          <small>✨ IA: imágenes y PDF · ⚡ Local: imágenes, PDF, Excel y CSV</small>
+          <p>📷 Toca aquí para poner tu foto o archivo</p>
+          <small>Puedes poner fotos, PDF, Excel o CSV · También puedes pegarla con CTRL + V</small>
           <input type="file" id="fileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
         </div>
 
@@ -207,10 +209,10 @@
 
         <div class="actions" style="margin-top: 8px;">
           <button id="btnProcessIA" class="btn-ia" style="flex: 1; min-width: 180px;" disabled>
-            ✨ PROCESAR CON IA
+            ✨ LEER CON IA (mejor)
           </button>
           <button id="btnProcessLocal" class="secondary" style="flex: 1; min-width: 180px;" disabled>
-            ⚡ PROCESAR CON OCR LOCAL
+            ⚡ LEER SIN IA (rápido)
           </button>
         </div>
 
@@ -226,7 +228,7 @@
       </div>
 
       <div class="row">
-        <label class="field-label" for="domain">DOMINIO PREDETERMINADO (SI NO VIENE EN EL TEXTO)</label>
+        <label class="field-label" for="domain">CORREO QUE SE AGREGA AL FINAL (SI NO VIENE EN EL TEXTO)</label>
         <input type="text" id="domain" value="@clases.edu.sv">
       </div>
 
@@ -241,18 +243,18 @@
 
       <!-- ============ COMPARADOR MASIVO ============ -->
       <div class="row">
-        <label class="field-label" style="font-size: 12px; margin-bottom: 4px;">3. Comparador Masivo: Detectar Estudiantes Faltantes</label>
-        <p style="font-size: 11px; color: #4a5578; margin-top: 0; line-height: 1.4;">Sube uno o varios archivos Excel/CSV para cruzarlos contra la lista principal generada arriba. El sistema te dirá exactamente qué alumnos no aparecen en esos documentos.</p>
+        <label class="field-label" style="font-size: 12px; margin-bottom: 4px;">3. Ver quién falta en otros listados</label>
+        <p style="font-size: 11px; color: #4a5578; margin-top: 0; line-height: 1.4;">Sube uno o varios archivos (Excel o CSV) para compararlos con la lista de arriba. El sistema te dirá qué estudiantes no aparecen en esos archivos.</p>
 
         <div class="file-dropzone" onclick="document.getElementById('compareFileInput').click()">
-          <p>📁 Haz clic para subir <strong>MÚLTIPLES ARCHIVOS</strong> (Excel, CSV)</p>
+          <p>📁 Toca aquí para subir varios archivos (Excel, CSV)</p>
           <input type="file" id="compareFileInput" accept=".csv, .xlsx, .xls" multiple>
         </div>
       </div>
 
       <div class="actions" style="margin-bottom: 12px;">
-        <button id="btnCompareParse">GENERAR TABLA COMPARATIVA</button>
-        <button id="btnCompareClear" class="secondary">LIMPIAR COMPARADOR</button>
+        <button id="btnCompareParse">VER QUIÉN FALTA</button>
+        <button id="btnCompareClear" class="secondary">LIMPIAR</button>
       </div>
 
       <div id="compareStatus" class="status"></div>
@@ -264,22 +266,22 @@
         <div id="countPill" class="count-pill"></div>
         <div class="actions top-actions">
           <button id="btnCopy" class="secondary" disabled>COPIAR TABLA</button>
-          <button id="btnCsv" class="secondary" disabled>CSV</button>
+          <button id="btnCsv" class="secondary" disabled>DESCARGAR EXCEL</button>
         </div>
       </div>
 
       <div class="actions list-actions">
-        <div class="list-actions-title">COPIAR LISTAS ESPECÍFICAS:</div>
-        <button id="btnCopyEmails" class="utility" disabled>SOLO CORREOS (,)</button>
-        <button id="btnCopyNames" class="utility" disabled>SOLO NOMBRES</button>
-        <button id="btnCopyLastNames" class="utility" disabled>SOLO APELLIDOS</button>
+        <div class="list-actions-title">COPIAR SOLO UNA PARTE:</div>
+        <button id="btnCopyEmails" class="utility" disabled>CORREOS</button>
+        <button id="btnCopyNames" class="utility" disabled>NOMBRES</button>
+        <button id="btnCopyLastNames" class="utility" disabled>APELLIDOS</button>
       </div>
 
       <div class="table-scroll">
         <table id="outTable">
           <thead><tr><th>CORREO</th><th>APELLIDO</th><th>NOMBRE</th></tr></thead>
           <tbody id="outBody">
-            <tr><td colspan="3" class="empty-hint">La tabla aparecerá aquí después de procesar los datos.</td></tr>
+            <tr><td colspan="3" class="empty-hint">Aquí aparecerá tu lista de estudiantes después de procesar la foto o el archivo.</td></tr>
           </tbody>
         </table>
       </div>
@@ -291,21 +293,21 @@
         <div id="compareCountPill" class="count-pill"></div>
         <div class="actions top-actions">
           <button id="btnCopyCompareTable" class="secondary">COPIAR TABLA</button>
-          <button id="btnCompareCsv" class="secondary">CSV</button>
+          <button id="btnCompareCsv" class="secondary">DESCARGAR EXCEL</button>
         </div>
       </div>
 
       <div class="actions list-actions">
-        <div class="list-actions-title">COPIAR FALTANTES ESPECÍFICOS:</div>
-        <button id="btnCopyCompareEmails" class="utility">SOLO CORREOS (,)</button>
-        <button id="btnCopyCompareNames" class="utility">SOLO NOMBRES</button>
-        <button id="btnCopyCompareLastNames" class="utility">SOLO APELLIDOS</button>
-        <button id="btnCopyMissing" class="utility" style="border-color: var(--warn); color: var(--warn);">COPIAR ALUMNOS FALTANTES</button>
+        <div class="list-actions-title">COPIAR SOLO LOS QUE FALTAN:</div>
+        <button id="btnCopyCompareEmails" class="utility">CORREOS</button>
+        <button id="btnCopyCompareNames" class="utility">NOMBRES</button>
+        <button id="btnCopyCompareLastNames" class="utility">APELLIDOS</button>
+        <button id="btnCopyMissing" class="utility" style="border-color: var(--warn); color: var(--warn);">COPIAR TODOS LOS QUE FALTAN</button>
       </div>
 
       <div class="table-scroll">
         <table>
-          <thead><tr><th>CORREO</th><th>ESTUDIANTE (LISTA MAESTRA)</th><th>ESTADO</th></tr></thead>
+          <thead><tr><th>CORREO</th><th>ESTUDIANTE (DE LA LISTA DE ARRIBA)</th><th>¿APARECE?</th></tr></thead>
           <tbody id="compareBody"></tbody>
         </table>
       </div>
@@ -315,7 +317,7 @@
   </div>
 
   <footer>
-    Nombres y Apellidos se transforman automáticamente a MAYÚSCULAS. Las filas en naranja necesitan revisión manual. Doble clic en cualquier celda para corregir valores antes de copiar.
+    Los nombres y apellidos se ponen en MAYÚSCULAS automáticamente. Las filas de color naranja hay que revisarlas. Haz doble clic sobre cualquier celda para corregirla antes de copiar.
   </footer>
 </div>
 
@@ -378,7 +380,7 @@ function handleFiles(files) {
   renderThumbs();
   updateActionButtons();
   if (selectedImages.length > 0) {
-    setStatus('status', `${selectedImages.length} imagen(es) lista(s). Elige IA o OCR Local.`, 'ok');
+    setStatus('status', `${selectedImages.length} imagen(es) lista(s). Elige CON IA o SIN IA.`, 'ok');
   }
 }
 
@@ -405,12 +407,12 @@ function updateActionButtons() {
   document.getElementById('btnProcessLocal').disabled = !hasStuff;
 }
 
-// ==================== OCR CON IA (GEMINI) ====================
+// ==================== LEER CON IA (GEMINI) ====================
 document.getElementById('btnProcessIA').addEventListener('click', async () => {
   if (selectedImages.length === 0 && !selectedDoc) return;
 
   const status = document.getElementById('status');
-  setStatus(status, 'Enviando a la IA...', '');
+  setStatus(status, 'Leyendo con IA...', '');
 
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
@@ -431,11 +433,11 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
       const data = await response.json();
       if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
         currentImageNominaRows = data.students;
-        setStatus(status, `✅ ${data.total} estudiante(s) detectados con IA.`, 'ok');
+        setStatus(status, `✅ ¡Listo! Se leyeron ${data.total} estudiante(s). Ahora toca "PASAR DATOS A LA TABLA".`, 'ok');
         log(`[IA] ${data.total} estudiantes detectados.`);
         document.getElementById('btnTransferOcr').disabled = false;
       } else {
-        setStatus(status, '❌ La IA no detectó estudiantes válidos.', 'warn');
+        setStatus(status, '❌ No se pudieron leer estudiantes. Intenta con "SIN IA".', 'warn');
         document.getElementById('btnProcessIA').disabled = false;
         document.getElementById('btnProcessLocal').disabled = false;
       }
@@ -445,7 +447,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
       formData.append('files', selectedDoc);
 
       log(`[IA] Enviando PDF a Gemini...`);
-      setStatus(status, 'Enviando PDF a la IA... (puede tardar)', '');
+      setStatus(status, 'Leyendo el PDF con IA... (puede tardar)', '');
 
       const response = await fetch(API_URL, { method: 'POST', body: formData });
 
@@ -457,24 +459,24 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
       const data = await response.json();
       if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
         currentImageNominaRows = data.students;
-        setStatus(status, `✅ ${data.total} estudiante(s) detectados con IA (PDF).`, 'ok');
+        setStatus(status, `✅ ¡Listo! Se leyeron ${data.total} estudiante(s) del PDF. Ahora toca "PASAR DATOS A LA TABLA".`, 'ok');
         log(`[IA] ${data.total} estudiantes detectados del PDF.`);
         document.getElementById('btnTransferOcr').disabled = false;
       } else {
-        setStatus(status, '❌ La IA no detectó estudiantes en el PDF.', 'warn');
+        setStatus(status, '❌ No se pudieron leer estudiantes en el PDF. Intenta con "SIN IA".', 'warn');
         document.getElementById('btnProcessIA').disabled = false;
         document.getElementById('btnProcessLocal').disabled = false;
       }
     }
     else if (selectedDoc) {
-      log(`[Local] Excel/CSV → OCR local (no aplica IA).`);
+      log(`[Local] Excel/CSV → SIN IA (más rápido).`);
       await processDocumentLocal(selectedDoc);
     }
 
   } catch (err) {
     console.error(err);
-    log(`[IA] Error: ${err.message}. Cayendo a OCR local...`);
-    setStatus(status, '⚠️ IA no disponible. Usando OCR local como respaldo...', 'warn');
+    log(`[IA] Error: ${err.message}. Cambiando a SIN IA...`);
+    setStatus(status, '⚠️ La IA no está disponible. Se usará SIN IA automáticamente...', 'warn');
 
     if (selectedImages.length > 0) {
       await processImagesLocal();
@@ -484,7 +486,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
   }
 });
 
-// ==================== OCR LOCAL ====================
+// ==================== LEER SIN IA ====================
 document.getElementById('btnProcessLocal').addEventListener('click', async () => {
   if (selectedImages.length === 0 && !selectedDoc) return;
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
@@ -497,18 +499,18 @@ document.getElementById('btnProcessLocal').addEventListener('click', async () =>
     }
   } catch (err) {
     console.error(err);
-    setStatus('status', '❌ Error en OCR local.', 'warn');
+    setStatus('status', '❌ Hubo un error al leer. Intenta de nuevo.', 'warn');
     document.getElementById('btnProcessLocal').disabled = false;
   }
 });
 
 async function processImagesLocal() {
   const status = document.getElementById('status');
-  setStatus(status, `Procesando ${selectedImages.length} imagen(es) con OCR local...`, '');
+  setStatus(status, `Leyendo ${selectedImages.length} imagen(es) sin IA...`, '');
 
   let allText = '';
   for (let i = 0; i < selectedImages.length; i++) {
-    setStatus(status, `Procesando imagen ${i+1} de ${selectedImages.length}...`, '');
+    setStatus(status, `Leyendo imagen ${i+1} de ${selectedImages.length}...`, '');
     const canvas = await loadImageToCanvas(selectedImages[i]);
     preprocessCanvas(canvas);
     const text = await runOcrOnCanvas(canvas);
@@ -519,10 +521,10 @@ async function processImagesLocal() {
   rawOcrBuffer = cleanOCRNoise(allText);
 
   if (rawOcrBuffer.trim()) {
-    setStatus(status, '✅ OCR local completado. Presiona "PASAR DATOS A LA TABLA".', 'ok');
+    setStatus(status, '✅ ¡Listo! Ahora toca "PASAR DATOS A LA TABLA".', 'ok');
     document.getElementById('btnTransferOcr').disabled = false;
   } else {
-    setStatus(status, '⚠️ No se extrajo texto válido.', 'warn');
+    setStatus(status, '⚠️ No se pudo leer texto. Prueba con otra foto o usa CON IA.', 'warn');
     document.getElementById('btnProcessIA').disabled = false;
     document.getElementById('btnProcessLocal').disabled = false;
   }
@@ -530,7 +532,7 @@ async function processImagesLocal() {
 
 async function processDocumentLocal(file) {
   const status = document.getElementById('status');
-  setStatus(status, 'Procesando documento...', '');
+  setStatus(status, 'Leyendo el documento...', '');
 
   try {
     let extractedText = '';
@@ -545,17 +547,17 @@ async function processDocumentLocal(file) {
     rawOcrBuffer = cleanOCRNoise(extractedText);
 
     if (rawOcrBuffer.trim()) {
-      setStatus(status, '✅ Documento procesado. Presiona "PASAR DATOS A LA TABLA".', 'ok');
+      setStatus(status, '✅ ¡Listo! Ahora toca "PASAR DATOS A LA TABLA".', 'ok');
       document.getElementById('btnTransferOcr').disabled = false;
       log(`[Local] Documento procesado.`);
     } else {
-      setStatus(status, '⚠️ No se extrajeron datos válidos del documento.', 'warn');
+      setStatus(status, '⚠️ No se encontraron estudiantes en el documento.', 'warn');
       document.getElementById('btnProcessIA').disabled = false;
       document.getElementById('btnProcessLocal').disabled = false;
     }
   } catch (err) {
     console.error(err);
-    setStatus(status, '❌ Error al procesar el documento.', 'warn');
+    setStatus(status, '❌ Hubo un error al leer el documento.', 'warn');
     document.getElementById('btnProcessIA').disabled = false;
     document.getElementById('btnProcessLocal').disabled = false;
   }
@@ -832,7 +834,7 @@ function cleanOCRNoise(str) {
     .join('\n');
 }
 
-// ==================== TRANSFERIR A LA TABLA ====================
+// ==================== PASAR DATOS A LA TABLA ====================
 document.getElementById('btnTransferOcr').addEventListener('click', () => {
   const rawInput = document.getElementById('raw');
   const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
@@ -851,9 +853,9 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
 
   const status = document.getElementById('status');
   if (rows.length === 0) {
-    setStatus(status, 'Datos transferidos, pero no se detectaron estudiantes válidos.', 'warn');
+    setStatus(status, 'Se pasaron los datos, pero no se detectaron estudiantes.', 'warn');
   } else {
-    setStatus(status, `¡Datos transferidos! Se generó la tabla con ${rows.length} estudiantes.`, 'ok');
+    setStatus(status, `✅ ¡Listo! Se pusieron ${rows.length} estudiantes en la tabla de la derecha.`, 'ok');
   }
 });
 
@@ -944,14 +946,14 @@ function render(rows, domain) {
 
   if (rows.length === 0) {
     const rawVal = document.getElementById('raw').value.trim();
-    body.innerHTML = `<tr><td colspan="3" class="empty-hint">${rawVal ? 'No se detectó información válida. Revisa el texto.' : 'La tabla aparecerá aquí después de procesar los datos.'}</td></tr>`;
+    body.innerHTML = `<tr><td colspan="3" class="empty-hint">${rawVal ? 'No se encontraron datos válidos. Revisa el texto.' : 'Aquí aparecerá tu lista de estudiantes después de procesar la foto o el archivo.'}</td></tr>`;
     pill.textContent = '';
     buttons.forEach(btn => btn.disabled = true);
     return;
   }
 
   const reviewCount = rows.filter(r => r.review).length;
-  pill.textContent = `${rows.length} estudiante(s) detectado(s)` + (reviewCount ? ` — ${reviewCount} requieren revisar correo/NIE` : '');
+  pill.textContent = `${rows.length} estudiante(s)` + (reviewCount ? ` — ${reviewCount} por revisar` : '');
 
   body.innerHTML = rows.map(r => {
     const emailValue = r.nie ? (r.nie.includes('@') ? r.nie : `${r.nie}${domain}`) : '';
@@ -981,7 +983,7 @@ document.getElementById('btnParse').addEventListener('click', () => {
   const status = document.getElementById('status');
 
   if (!raw.trim()) {
-    setStatus(status, 'Ingresa o pasa los datos primero.', 'warn');
+    setStatus(status, 'Primero pega o sube los datos.', 'warn');
     return;
   }
 
@@ -989,9 +991,9 @@ document.getElementById('btnParse').addEventListener('click', () => {
   render(rows, domain);
 
   if (rows.length === 0) {
-    setStatus(status, 'No se encontraron alumnos. Revisa el texto.', 'warn');
+    setStatus(status, 'No se encontraron estudiantes. Revisa el texto.', 'warn');
   } else {
-    setStatus(status, `¡Listo! ${rows.length} estudiantes procesados con éxito.`, 'ok');
+    setStatus(status, `✅ ¡Listo! ${rows.length} estudiantes en la tabla.`, 'ok');
   }
 });
 
@@ -1020,31 +1022,31 @@ function setClipboard(text, successMsg, statusElement) {
   navigator.clipboard.writeText(text).then(() => {
     targetElement.textContent = successMsg;
     targetElement.className = 'status ok';
-  }).catch(() => alert('Error al copiar al portapapeles.'));
+  }).catch(() => alert('No se pudo copiar.'));
 }
 
 document.getElementById('btnCopy').addEventListener('click', () => {
   const data = getTableData();
   const tsv = data.map(r => r.join('\t')).join('\n');
-  setClipboard(tsv, 'Tabla copiada. Lista para pegar en Excel con Ctrl+V.');
+  setClipboard(tsv, '✅ Tabla copiada. Pégala en Excel con Ctrl+V.');
 });
 
 document.getElementById('btnCopyEmails').addEventListener('click', () => {
   const data = getTableData();
   const emails = data.map(r => r[0]).join(', ');
-  setClipboard(emails, 'Correos copiados y separados por comas.');
+  setClipboard(emails, '✅ Correos copiados.');
 });
 
 document.getElementById('btnCopyNames').addEventListener('click', () => {
   const data = getTableData();
   const names = data.map(r => r[2]).join('\n');
-  setClipboard(names, 'Lista de nombres copiada.');
+  setClipboard(names, '✅ Nombres copiados.');
 });
 
 document.getElementById('btnCopyLastNames').addEventListener('click', () => {
   const data = getTableData();
   const lastNames = data.map(r => r[1]).join('\n');
-  setClipboard(lastNames, 'Lista de apellidos copiada.');
+  setClipboard(lastNames, '✅ Apellidos copiados.');
 });
 
 document.getElementById('btnCsv').addEventListener('click', () => {
@@ -1067,7 +1069,7 @@ document.getElementById('compareFileInput').addEventListener('change', async (e)
 
   if (!files || files.length === 0) return;
 
-  setStatus(status, `Procesando ${files.length} archivo(s)...`, '');
+  setStatus(status, `Revisando ${files.length} archivo(s)...`, '');
   foundNiesSet.clear();
 
   try {
@@ -1087,10 +1089,10 @@ document.getElementById('compareFileInput').addEventListener('change', async (e)
       }
     }
 
-    setStatus(status, `Análisis completado en ${files.length} archivo(s). Haz clic en GENERAR TABLA COMPARATIVA.`, 'ok');
+    setStatus(status, `✅ Se revisaron ${files.length} archivo(s). Ahora toca "VER QUIÉN FALTA".`, 'ok');
   } catch (err) {
     console.error(err);
-    setStatus(status, 'Ocurrió un error al leer los archivos de comparación.', 'warn');
+    setStatus(status, '⚠️ Hubo un problema al leer los archivos.', 'warn');
   }
 });
 
@@ -1099,7 +1101,7 @@ document.getElementById('btnCompareParse').addEventListener('click', () => {
   const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
 
   if (!currentParsedStudents || currentParsedStudents.length === 0) {
-    setStatus(status, 'Primero debes generar la lista principal arriba (Sección 1/2).', 'warn');
+    setStatus(status, 'Primero hay que generar la lista de arriba.', 'warn');
     return;
   }
 
@@ -1134,13 +1136,13 @@ function renderComparisonResults(results) {
   const resultsDiv = document.getElementById('compareResults');
   const missingList = results.filter(r => !r.found);
 
-  pill.textContent = `${missingList.length} estudiante(s) FALTANTE(S) de un total de ${results.length}`;
+  pill.textContent = `Faltan ${missingList.length} de ${results.length} estudiante(s)`;
 
   tbody.innerHTML = results.map(r => `
     <tr class="${!r.found ? 'missing-row' : ''}">
       <td contenteditable="true">${r.email}</td>
       <td>${r.fullName}</td>
-      <td><strong>${r.found ? 'ENCONTRADO' : '❌ FALTANTE'}</strong></td>
+      <td><strong>${r.found ? '✅ Sí' : '❌ NO'}</strong></td>
     </tr>
   `).join('');
 
@@ -1154,19 +1156,19 @@ document.getElementById('btnCopyCompareTable').addEventListener('click', () => {
   const rows = [...document.querySelectorAll('#compareBody tr')];
   if (rows.length === 0) return;
   const tsv = rows.map(tr => [...tr.querySelectorAll('td')].map(td => td.textContent.trim()).join('\t')).join('\n');
-  setClipboard(tsv, 'Tabla comparativa copiada.', compareActionStatus);
+  setClipboard(tsv, '✅ Tabla copiada.', compareActionStatus);
 });
 
 document.getElementById('btnCompareCsv').addEventListener('click', () => {
   const rows = [...document.querySelectorAll('#compareBody tr')];
   if (rows.length === 0) return;
   const data = rows.map(tr => [...tr.querySelectorAll('td')].map(td => td.textContent.trim()));
-  const csvRows = ['Correo,Estudiante (Lista Maestra),Estado', ...data.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))];
+  const csvRows = ['Correo,Estudiante,¿Aparece?', ...data.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(','))];
   const blob = new Blob(['\ufeff' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.body.appendChild(document.createElement('a'));
   link.href = url;
-  link.download = 'lista_comparativa_estudiantes.csv';
+  link.download = 'lista_comparativa.csv';
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
@@ -1174,27 +1176,27 @@ document.getElementById('btnCompareCsv').addEventListener('click', () => {
 
 document.getElementById('btnCopyCompareEmails').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
-  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
-  setClipboard(missingList.map(r => r.email).filter(Boolean).join(', '), 'Correos de FALTANTES copiados.', compareActionStatus);
+  if (missingList.length === 0) { alert('No hay estudiantes faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.email).filter(Boolean).join(', '), '✅ Correos de los que faltan copiados.', compareActionStatus);
 });
 
 document.getElementById('btnCopyCompareNames').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
-  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
-  setClipboard(missingList.map(r => r.nombre).filter(Boolean).join('\n'), 'Nombres de FALTANTES copiados.', compareActionStatus);
+  if (missingList.length === 0) { alert('No hay estudiantes faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.nombre).filter(Boolean).join('\n'), '✅ Nombres de los que faltan copiados.', compareActionStatus);
 });
 
 document.getElementById('btnCopyCompareLastNames').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
-  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
-  setClipboard(missingList.map(r => r.apellido).filter(Boolean).join('\n'), 'Apellidos de FALTANTES copiados.', compareActionStatus);
+  if (missingList.length === 0) { alert('No hay estudiantes faltantes para copiar.'); return; }
+  setClipboard(missingList.map(r => r.apellido).filter(Boolean).join('\n'), '✅ Apellidos de los que faltan copiados.', compareActionStatus);
 });
 
 document.getElementById('btnCopyMissing').addEventListener('click', () => {
   const missingList = lastComparisonResults.filter(r => !r.found);
-  if (missingList.length === 0) { alert('No hay alumnos faltantes para copiar.'); return; }
+  if (missingList.length === 0) { alert('No hay estudiantes faltantes para copiar.'); return; }
   const textToCopy = missingList.map(m => `${m.email}\t${m.fullName}`).join('\n');
-  setClipboard(textToCopy, 'Lista de alumnos faltantes copiada.', compareActionStatus);
+  setClipboard(textToCopy, '✅ Lista de los que faltan copiada.', compareActionStatus);
 });
 </script>
 </body>
