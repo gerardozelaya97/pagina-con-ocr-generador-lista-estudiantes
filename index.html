@@ -85,8 +85,8 @@
       <div class="row">
         <label class="field-label">1. Extraer desde Captura, PDF, Excel o CSV</label>
         <div class="file-dropzone" onclick="document.getElementById('fileInput').click()">
-          <p>📷 Haz clic para subir (Imagen, PDF, Excel, CSV) o <strong>CTRL + V</strong> para pegar</p>
-          <small>Imágenes: puedes seleccionar varias si la lista tiene más de 1 página</small>
+          <p>📷 Haz clic para subir o <strong>CTRL + V</strong> para pegar captura</p>
+          <small>✨ IA: imágenes y PDF · ⚡ Local: imágenes, PDF, Excel y CSV</small>
           <input type="file" id="fileInput" accept="image/*, application/pdf, .csv, .xlsx, .xls" multiple>
         </div>
 
@@ -96,7 +96,7 @@
         <!-- Botones de OCR -->
         <div class="actions" style="margin-top: 8px;">
           <button id="btnProcessIA" class="btn-ia" style="flex: 1; min-width: 180px;" disabled>
-            ✨ PROCESAR CON IA (Gemini)
+            ✨ PROCESAR CON IA
           </button>
           <button id="btnProcessLocal" class="secondary" style="flex: 1; min-width: 180px;" disabled>
             ⚡ PROCESAR CON OCR LOCAL
@@ -219,8 +219,8 @@ const CONNECTORS = new Set(["Y","DE","DEL","LA","LAS","LOS","SAN","SANTA","VDA"]
 let rawOcrBuffer = '';
 let currentParsedStudents = [];
 let currentImageNominaRows = [];
-let selectedImages = [];         // Imágenes pendientes de procesar
-let selectedDoc = null;           // PDF/Excel/CSV pendiente
+let selectedImages = [];
+let selectedDoc = null;
 let foundNiesSet = new Set();
 let lastComparisonResults = [];
 
@@ -254,7 +254,6 @@ function handleFiles(files) {
   const images = files.filter(f => f.type.startsWith('image/'));
   const docs = files.filter(f => !f.type.startsWith('image/'));
 
-  // Si hay documentos (PDF/Excel/CSV), guardar el primero para procesar
   if (docs.length > 0) {
     selectedDoc = docs[0];
     document.getElementById('docInfo').style.display = 'block';
@@ -264,7 +263,6 @@ function handleFiles(files) {
     return;
   }
 
-  // Solo imágenes
   images.forEach(f => selectedImages.push(f));
   renderThumbs();
   updateActionButtons();
@@ -306,7 +304,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
 
   try {
-    // Si hay imágenes, usar el endpoint multi-imagen
+    // Imágenes → enviar a Gemini
     if (selectedImages.length > 0) {
       const formData = new FormData();
       selectedImages.forEach(f => formData.append('files', f));
@@ -316,14 +314,11 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
       const response = await fetch(API_URL, { method: 'POST', body: formData });
 
       if (!response.ok) {
-        if (response.status === 503) {
-          throw new Error('503: modelo saturado');
-        }
+        if (response.status === 503) throw new Error('503: modelo saturado');
         throw new Error(`HTTP ${response.status}`);
       }
 
       const data = await response.json();
-
       if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
         currentImageNominaRows = data.students;
         setStatus(status, `✅ ${data.total} estudiante(s) detectados con IA.`, 'ok');
@@ -334,9 +329,37 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
         document.getElementById('btnProcessIA').disabled = false;
         document.getElementById('btnProcessLocal').disabled = false;
       }
-    } else {
-      // Documento (PDF/Excel/CSV): usar OCR local directamente
-      setStatus(status, 'Los documentos usan OCR local. Procesando...', '');
+    }
+    // PDF → también se envía a Gemini
+    else if (selectedDoc && selectedDoc.name.toLowerCase().endsWith('.pdf')) {
+      const formData = new FormData();
+      formData.append('files', selectedDoc);
+
+      log(`[IA] Enviando PDF a Gemini...`);
+      setStatus(status, 'Enviando PDF a la IA... (puede tardar)', '');
+
+      const response = await fetch(API_URL, { method: 'POST', body: formData });
+
+      if (!response.ok) {
+        if (response.status === 503) throw new Error('503: modelo saturado');
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.status === 'ok' && Array.isArray(data.students) && data.students.length > 0) {
+        currentImageNominaRows = data.students;
+        setStatus(status, `✅ ${data.total} estudiante(s) detectados con IA (PDF).`, 'ok');
+        log(`[IA] ${data.total} estudiantes detectados del PDF.`);
+        document.getElementById('btnTransferOcr').disabled = false;
+      } else {
+        setStatus(status, '❌ La IA no detectó estudiantes en el PDF.', 'warn');
+        document.getElementById('btnProcessIA').disabled = false;
+        document.getElementById('btnProcessLocal').disabled = false;
+      }
+    }
+    // Excel/CSV → siempre OCR local (no aplica IA)
+    else if (selectedDoc) {
+      log(`[Local] Excel/CSV → OCR local (no aplica IA).`);
       await processDocumentLocal(selectedDoc);
     }
 
@@ -345,7 +368,6 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
     log(`[IA] Error: ${err.message}. Cayendo a OCR local...`);
     setStatus(status, '⚠️ IA no disponible. Usando OCR local como respaldo...', 'warn');
 
-    // Auto-fallback a OCR local
     if (selectedImages.length > 0) {
       await processImagesLocal();
     } else if (selectedDoc) {
@@ -354,7 +376,7 @@ document.getElementById('btnProcessIA').addEventListener('click', async () => {
   }
 });
 
-// ==================== OCR LOCAL (TESSERACT + PDF/EXCEL) ====================
+// ==================== OCR LOCAL ====================
 document.getElementById('btnProcessLocal').addEventListener('click', async () => {
   if (selectedImages.length === 0 && !selectedDoc) return;
   ['btnProcessIA', 'btnProcessLocal', 'btnTransferOcr'].forEach(id => document.getElementById(id).disabled = true);
@@ -377,7 +399,6 @@ async function processImagesLocal() {
   setStatus(status, `Procesando ${selectedImages.length} imagen(es) con OCR local...`, '');
 
   let allText = '';
-
   for (let i = 0; i < selectedImages.length; i++) {
     setStatus(status, `Procesando imagen ${i+1} de ${selectedImages.length}...`, '');
     const canvas = await loadImageToCanvas(selectedImages[i]);
@@ -478,7 +499,6 @@ async function extractPdfText(file) {
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   let text = '';
 
-  // Intento 1: extracción estructurada por coordenadas
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
     const textContent = await page.getTextContent();
@@ -511,7 +531,6 @@ async function extractPdfText(file) {
     }
   }
 
-  // Fallback: si el PDF no tenía texto (escaneado), usar OCR en canvas
   if (!text || text.trim().length < 20) {
     log('[PDF] PDF sin texto. Aplicando OCR sobre las páginas...');
     text = '';
@@ -710,7 +729,6 @@ document.getElementById('btnTransferOcr').addEventListener('click', () => {
   const rawInput = document.getElementById('raw');
   const domain = document.getElementById('domain').value.trim() || '@clases.edu.sv';
 
-  // Si vino de IA (JSON estructurado), convertir a texto
   if (currentImageNominaRows.length > 0) {
     const textLines = currentImageNominaRows.map(r => `${r.nie} ${r.nombre}`).join('\n');
     rawInput.value = textLines;
