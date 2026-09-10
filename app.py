@@ -68,7 +68,7 @@ async def llamar_gemini_con_reintentos(contents: list, max_intentos: int = 4):
         try:
             print(f"[Gemini] Intento {intento}/{max_intentos}...")
             response = client.models.generate_content(
-                model='gemini-3.6-flash',
+                model='gemini-2.5-flash',
                 contents=contents + [prompt],
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
